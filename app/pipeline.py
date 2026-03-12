@@ -443,7 +443,8 @@ def process_batch(articles: List[Dict[str, Any]], link_map: Dict[str, Any]):
 
                         # SEO meta
                         yoast_meta = rewritten_data.get('yoast_meta', {})
-                        yoast_meta['_yoast_wpseo_canonical'] = art_data['url']
+                        # canonical OMITIDO: Yoast gera self-referencing canonical automaticamente.
+                        # A URL da fonte é citada editorialmente no corpo do artigo.
                         if related_kws := rewritten_data.get('related_keyphrases'):
                             yoast_meta['_yoast_wpseo_keyphrases'] = json.dumps([{"keyword": kw} for kw in related_kws])
 
