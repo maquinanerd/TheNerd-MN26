@@ -10,3 +10,7 @@ python-slugify
 google-generativeai
 APScheduler
 tmdbv3api
+trafilatura
+feedgen
+Pillow
+SQLAlchemy
