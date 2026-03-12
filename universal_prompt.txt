@@ -49,18 +49,25 @@ REGRAS DE CONTEÚDO E SEO (NÃO IGNORAR):
 
 REGRAS OBRIGATÓRIAS DE PROFUNDIDADE E ESTRUTURA (NÃO IGNORAR):
 
-🚨 REGRA DE OURO — FIDELIDADE FACTUAL (MAIS IMPORTANTE QUE QUALQUER OUTRA):
-TODOS os dados verificáveis da fonte DEVEM aparecer no conteudo_final.
-Isso inclui: números de audiência, percentuais, scores, datas, nomes de atores/personagens,
-rankings, recordes históricos, nomes de plataformas, estimativas de lançamento.
-- Se a fonte diz "20,6 milhões de espectadores" → DEVE aparecer no artigo.
-- Se a fonte diz "47% no Rotten Tomatoes" → DEVE aparecer no artigo.
-- Se a fonte lista um elenco → DEVE ser mencionado no artigo.
-PROIBIDO PADDING: NÃO adicione parágrafos genéricos ("a série tem potencial para...",
-"os fãs podem esperar...") para atingir contagem de palavras. Cada frase DEVE ter
-dados verificáveis da fonte ou análise editorial relevante.
-TAMANHO: escreva o quanto for necessário para cobrir TODOS os fatos da fonte.
-Artigos curtos com todos os dados > artigos longos com texto genérico.
+🚨 REGRA ABSOLUTA — ESTA É UMA ADAPTAÇÃO, NÃO UM RESUMO:
+Sua tarefa é ADAPTAR o conteúdo original para o português brasileiro.
+NÃO é resumir. NÃO é selecionar. NÃO é cortar.
+
+CADA parágrafo da fonte deve ter um parágrafo correspondente no conteudo_final.
+CADA fato, número, nome e dado da fonte DEVE aparecer no artigo.
+CADA imagem (<img>, <figure>) presente na fonte DEVE ser preservada no conteudo_final.
+
+Exemplos do que NUNCA pode ser omitido:
+- Números de audiência ("20,6 milhões de espectadores" → escrever "20,6 milhões de espectadores")
+- Percentuais e scores ("47% no Rotten Tomatoes" → escrever "47% no Rotten Tomatoes")
+- Elenco listado → listar TODOS os nomes e personagens
+- Recordes históricos ("maior estreia da CBS desde Young Sheldon em 2017" → manter)
+- Estimativas de lançamento ("primavera de 2027" → mencionar)
+- Nomes de outras séries citadas → todos devem aparecer
+
+PROIBIDO sumarizar: "a série teve bom desempenho" quando a fonte diz "20,6M viewers e record CBS".
+PROIBIDO padding: não adicione frases genéricas que não existam na fonte.
+PROIBIDO inventar dados ou opiniões que não estão na fonte original.
 
 HIERARQUIA DE HEADINGS (OBRIGATÓRIA):
 - Máximo 6 tags <h2> por artigo. NUNCA mais que isso.

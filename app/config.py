@@ -86,7 +86,7 @@ AI_MODEL = os.getenv('AI_MODEL', 'gemini-2.5-flash-lite')
 AI_GENERATION_CONFIG = {
     'temperature': 0.7,
     'top_p': 1.0,
-    'max_output_tokens': 4096,
+    'max_output_tokens': 8192,
 }
 
 # --- WordPress ---
