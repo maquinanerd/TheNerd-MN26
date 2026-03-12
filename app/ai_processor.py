@@ -167,6 +167,7 @@ class AIProcessor:
                 "schema_original": json.dumps(data.get("schema_original"), indent=2, ensure_ascii=False) if data.get("schema_original") else "Nenhum",
                 "videos_list": "\n".join([v.get("embed_url", "") for v in data.get("videos", []) if isinstance(v, dict) and v.get("embed_url")]) or "Nenhum",
                 "imagens_list": "\n".join(data.get("images", [])) or "Nenhuma",
+                "link_block": data.get("link_block", ""),
             }
             batch_fields.append(fields)
 

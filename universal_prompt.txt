@@ -47,6 +47,38 @@ REGRAS DE CONTEÚDO E SEO (NÃO IGNORAR):
 7.  *Meta Description*: Crie um resumo de 140 a 155 caracteres, factual e otimizado para cliques, sem call-to-action.
 ---
 
+REGRAS OBRIGATÓRIAS DE PROFUNDIDADE E ESTRUTURA (NÃO IGNORAR):
+
+TAMANHO MÍNIMO:
+- Notícia padrão:     mínimo 700 palavras no conteudo_final
+- Análise/Explicação: mínimo 1.000 palavras
+- Artigos abaixo de 500 palavras receberão noindex automático pelo pipeline
+
+HIERARQUIA DE HEADINGS (OBRIGATÓRIA):
+- Máximo 6 tags <h2> por artigo. NUNCA mais que isso.
+- Cada <h2> DEVE ter pelo menos um <h3> filho com subtópico específico.
+- PROIBIDO: sequência de <h2> seguidos sem nenhum <h3> entre eles.
+
+ESTRUTURA OBRIGATÓRIA DO ARTIGO:
+1. Parágrafo de abertura forte (lead: O que, Quem, Onde, Por quê)
+2. <h2>O que você precisa saber</h2>  ← SEMPRE o primeiro H2
+   <ul>
+     <li>[O que aconteceu em uma frase]</li>
+     <li>[Por que isso importa para o fã]</li>
+     <li>[O que esperar a seguir]</li>
+   </ul>
+3. [2-4 H2s de desenvolvimento, cada um com H3s filhos]
+4. <h2>Nossa Análise</h2>  ← SEMPRE o último H2
+   Um parágrafo com perspectiva editorial única. Use voz ativa.
+   Conecte com outras obras/franquias do mesmo universo.
+
+PROIBIDO:
+- Mais de 6 tags <h2>
+- Sequência de <h2> sem <h3> intercalado
+- Ausência do bloco "O que você precisa saber"
+- Ausência da seção "Nossa Análise"
+---
+
 A SUA RESPOSTA DEVE SER ESTRITAMENTE UM OBJETO JSON VÁLIDO. NÃO INCLUA NENHUM TEXTO, EXPLICAÇÃO OU FORMATAÇÃO MARKDOWN FORA DO OBJETO JSON.
 
 Use a seguinte estrutura JSON para a sua resposta:
@@ -103,6 +135,10 @@ DETALHES PARA CADA CAMPO DO JSON
 - Crie no máximo 4 links internos relevantes usando o formato https://{domain}/tag/{tag}.
 - Os links internos DEVEM ser SEMPRE absolutos, *com https:// obrigatório*, no formato exato:
   <a href="https://{domain}/tag/{tag}">Palavra-Chave</a>
+- Se houver links na seção "LINKS INTERNOS DISPONÍVEIS" (no final deste prompt), USE 1 a 3 deles
+  inserindo-os contextualmente no corpo do artigo. O texto âncora DEVE descrever o conteúdo
+  de destino com as palavras-chave do tema. NUNCA use “clique aqui”, “saiba mais” ou “leia também”
+  como texto âncora. Links externos (fontes): adicione rel="nofollow". Links internos: nunca nofollow.
 - Qualquer outra forma de link é proibida.
 - Nunca insira a URL sozinha, sem âncora de texto.
 - As palavras escolhidas para âncora devem ser nomes de filmes, séries, franquias, personagens ou atores.
@@ -260,7 +296,10 @@ CONTEÚDO (conteudo_final):
 □ Sem "veja", "entenda", "clique aqui"? Se sim, REMOVER.
 □ Links internos com https:// completo? Se relativo ou faltando, REFAZER.
 □ Parágrafos com máx 3–4 frases? Se mais longo, QUEBRAR.
-□ Mínimo 3 subtítulos <h2>? Se menos, ADICIONAR.
+□ Primeiro H2 é "O que você precisa saber"? Se não, REFAZER.
+□ Último H2 é "Nossa Análise"? Se não, REFAZER.
+□ Cada H2 tem pelo menos um H3 filho? Se não, ADICIONAR.
+□ Máximo 6 tags <h2>? Se mais, REMOVER.
 □ Palavras-chave no primeiro parágrafo? Se não, ADICIONAR.
 □ Imagens com <figure> e <figcaption>? Se sem legenda, ADICIONAR.
 
@@ -282,3 +321,5 @@ DADOS PARA PROCESSAMENTO:
 - Vídeos do YouTube Disponíveis (use a embed_url): {videos_list}
 - Conteúdo Original (HTML):
 {content}
+
+{link_block}

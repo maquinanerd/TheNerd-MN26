@@ -39,6 +39,7 @@ from .html_utils import (
     html_to_gutenberg_blocks,
 )
 from .internal_linking import add_internal_links
+from .link_store import save_article as ls_save_article, get_related as ls_get_related, format_for_prompt as ls_format_links
 from .task_queue import ArticleQueue
 from bs4 import BeautifulSoup
 from .cleaners import clean_html_for_globo_esporte
@@ -59,6 +60,87 @@ BETWEEN_PUBLISH_DELAY_S = int(os.getenv('BETWEEN_PUBLISH_DELAY_S', 30))  # 30s e
 CLEANER_FUNCTIONS = {
     'globo.com': clean_html_for_globo_esporte,
 }
+
+
+def assess_content_quality(content_html: str) -> dict:
+    """
+    Score multifatorial de qualidade — decide indexação.
+    Fatores: palavras, estrutura H2/H3, links internos, bloco editorial.
+    Score >= 45 → indexar.  Score < 45 → noindex.
+    """
+    soup  = BeautifulSoup(content_html, "html.parser")
+    text  = soup.get_text(separator=" ", strip=True)
+    words = len(text.split())
+
+    score = 0
+    # 1. Volume de palavras
+    if   words >= 600: score += 30
+    elif words >= 400: score += 15
+
+    # 2. Estrutura hierárquica (H3 dentro de H2 = profundidade real)
+    if soup.find("h3"): score += 20
+    if soup.find("h2"): score += 10
+
+    # 3. Links internos (distribuem PageRank, ajudam cluster)
+    int_links = [a for a in soup.find_all("a", href=True)
+                 if "maquinanerd.com.br" in a["href"]]
+    if   len(int_links) >= 2: score += 20
+    elif len(int_links) >= 1: score += 10
+
+    # 4. Bloco editorial "Nossa Análise" (do novo prompt)
+    if "nossa análise" in text.lower(): score += 15
+
+    should_index = score >= 45
+    reason = (
+        f"score={score} | {words}w | h3={'sim' if soup.find('h3') else 'não'}"
+        f" | links_int={len(int_links)} → {'INDEX' if should_index else 'NOINDEX'}"
+    )
+    return {"should_index": should_index, "word_count": words,
+            "score": score, "reason": reason}
+
+
+def semantic_qa_flash(title: str, content_html: str) -> dict:
+    """
+    Avaliação semântica via Gemini 2.5 Flash — Camada 2 do QA.
+    Custo: ~$0.24/mês. Latência: +0.5-1.5s por artigo.
+    Ativada APENAS para artigos com score borderline (35-50).
+    Detecta: CTA residual, valor informacional, tipo de conteúdo.
+    """
+    import json as _json
+    import google.generativeai as _genai
+
+    soup = BeautifulSoup(content_html, "html.parser")
+    text = soup.get_text(separator=" ", strip=True)[:2000]
+
+    prompt = f"""Avalie em 4 critérios. Responda APENAS em JSON, sem explicação.
+Título: {title}
+Texto: {text}
+Retorne exatamente:
+{{
+  "has_original_value": true,
+  "has_cta_residual": false,
+  "content_type": "news",
+  "quality_note": "observação em uma linha"
+}}
+has_original_value: true se o texto tem informação factual única (não é só repasse genérico)
+has_cta_residual: true se houver qualquer frase promoção/CTA do texto original (subscribe, clique, etc)
+content_type: "news" (notícia quente), "analysis" (análise/opinião), ou "evergreen" (guia atemporal)
+quality_note: observação editorial em uma linha"""
+
+    try:
+        _genai.configure(api_key=AI_API_KEYS[0])
+        model    = _genai.GenerativeModel("gemini-2.5-flash")
+        response = model.generate_content(prompt)
+        raw      = response.text.strip()
+        # remover marcadores de bloco de código se presentes
+        if raw.startswith("```"):
+            raw = raw.split("\n", 1)[-1].rsplit("```", 1)[0].strip()
+        return _json.loads(raw)
+    except Exception as exc:
+        logger.warning(f"[QA-LLM] Falha na avaliação semântica: {exc}")
+        return {"has_original_value": True, "has_cta_residual": False,
+                "content_type": "news", "quality_note": "erro_avaliação"}
+
 
 def _get_article_url(article_data: Dict[str, Any]) -> Optional[str]:
     """Get article URL from various possible fields."""
@@ -183,6 +265,20 @@ def process_batch(articles: List[Dict[str, Any]], link_map: Dict[str, Any]):
                 body_images_html = extracted.get('images', [])
                 content_for_ai = main_text + "\n".join(body_images_html)
 
+                # Detectar entidade do conteúdo fonte para sugestão de links
+                from .cluster_engine import score_event as _score_event_pre
+                _pre_event = _score_event_pre({
+                    "title": extracted.get('title', ''),
+                    "content": main_text,
+                    "tags": [],
+                })
+                _related = ls_get_related(
+                    entity=_pre_event.get("entity", ""),
+                    category=art['category'],
+                    limit=3,
+                )
+                _link_block = ls_format_links(_related)
+
                 batch_data.append({
                     'title': extracted.get('title'),
                     'content_html': content_for_ai,
@@ -192,7 +288,8 @@ def process_batch(articles: List[Dict[str, Any]], link_map: Dict[str, Any]):
                     'images': extracted.get('images', []),
                     'source_name': art['feed_config'].get('source_name', ''),
                     'domain': wp_client.get_domain(),
-                    'schema_original': extracted.get('schema_original')
+                    'schema_original': extracted.get('schema_original'),
+                    'link_block': _link_block,
                 })
 
             try:
@@ -448,6 +545,29 @@ def process_batch(articles: List[Dict[str, Any]], link_map: Dict[str, Any]):
                         if related_kws := rewritten_data.get('related_keyphrases'):
                             yoast_meta['_yoast_wpseo_keyphrases'] = json.dumps([{"keyword": kw} for kw in related_kws])
 
+                        # ─── QA Score — Camada 1: estrutural (sempre) ─────────────────────────────────
+                        quality = assess_content_quality(content_html)
+                        logger.info(f"[QA] {title[:50]} | {quality['reason']}")
+                        noindex_value = "0" if quality["should_index"] else "1"
+
+                        # ─── QA Score — Camada 2: semântica (apenas borderline 35–50) ─────────────
+                        if 35 <= quality["score"] < 50:
+                            qa2 = semantic_qa_flash(title, content_html)
+                            logger.info(
+                                f"[QA-LLM] type={qa2['content_type']} | "
+                                f"original={qa2['has_original_value']} | "
+                                f"cta={qa2['has_cta_residual']} | "
+                                f"{qa2['quality_note'][:60]}"
+                            )
+                            if qa2["has_cta_residual"]:
+                                logger.warning(f"[QA-LLM] CTA residual detectado: {title[:50]}")
+                            if qa2["content_type"] == "evergreen" and qa2["has_original_value"]:
+                                noindex_value = "0"  # forçar INDEX para evergreen com valor
+                                logger.info(f"[QA-LLM] Forçando INDEX por tipo evergreen: {title[:50]}")
+                            elif not qa2["has_original_value"]:
+                                noindex_value = "1"  # confirmar NOINDEX sem valor original
+                                logger.info(f"[QA-LLM] Confirmando NOINDEX sem valor original: {title[:50]}")
+
                         # VERIFICAÇÃO FINAL: CTA CHECK ANTES DE PUBLICAR
                         final_cta_match = detect_forbidden_cta(content_html)
                         if final_cta_match:
@@ -485,6 +605,8 @@ def process_batch(articles: List[Dict[str, Any]], link_map: Dict[str, Any]):
                                     'focuskw': rewritten_data.get('focus_keyword', rewritten_data.get('tags_sugeridas', [''])[0])[:30],
                                     'title_pt': title[:70],
                                     'description_pt': rewritten_data.get('meta_description', '')[:160],
+                                    'noindex': noindex_value,
+                                    'nofollow': '0',
                                 }
                                 yoast_ok = wp_client.update_post_yoast_seo(wp_post_id, featured_media_id, seo_meta)
                                 if not yoast_ok:
@@ -533,6 +655,38 @@ def process_batch(articles: List[Dict[str, Any]], link_map: Dict[str, Any]):
                                         wp_post_id=wp_post_id,
                                         article_title=title
                                     )
+
+                                    # ✅ EVENT SCORING — decide se gera cluster evergreen
+                                    from .cluster_engine import score_event
+                                    from .evergreen_publisher import schedule_cluster_pages
+                                    event = score_event({
+                                        "title":   title,
+                                        "content": content_html,
+                                        "tags":    rewritten_data.get("tags_sugeridas", []),
+                                    })
+                                    if event["should_cluster"]:
+                                        logger.info(
+                                            f"[CLUSTER] Score {event['score']} | "
+                                            f"entity={event['entity']} | "
+                                            f"templates={event['templates'][:3]} | "
+                                            f"post_id={wp_post_id}"
+                                        )
+                                        schedule_cluster_pages(
+                                            entity=event["entity"],
+                                            source_post_id=wp_post_id,
+                                            source_title=title,
+                                            templates=event["templates"],
+                                            category_ids=list(final_category_ids),
+                                        )
+
+                                    # ✅ LINK STORE — salvar artigo publicado para links internos futuros
+                                    ls_save_article(
+                                        title=title,
+                                        url=f"https://www.maquinanerd.com.br/{rewritten_data.get('slug', 'sem-slug')}/",
+                                        category=art_data['category'],
+                                        entity=event.get("entity", ""),
+                                    )
+                                    logger.debug(f"[LINKS] Salvo no link_store: {title[:50]}")
                                 else:
                                     logger.warning(f"Post {wp_post_id} criado mas sanitation falhou")
                             except Exception as e:
@@ -654,6 +808,13 @@ def worker_loop():
 def run_pipeline_cycle():
     """Read feeds and enqueue articles for the worker."""
     logger.info("Starting new pipeline ingestion cycle.")
+
+    # ✅ EVERGREEN: processar fila pendente ANTES de ingerir novo RSS
+    from .evergreen_publisher import process_evergreen_queue
+    ev_count = process_evergreen_queue(max_per_cycle=2)
+    if ev_count:
+        logger.info(f"[CYCLE] {ev_count} evergreen(s) publicado(s) neste ciclo")
+
     db = Database()
     feed_reader = FeedReader(user_agent=PIPELINE_CONFIG.get('publisher_name', 'Bot'))
     

@@ -68,3 +68,6 @@ uv.lock
 # Build outputs
 output.txt
 reports/
+
+# Backup files
+*.bak

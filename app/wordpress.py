@@ -683,6 +683,8 @@ class WordPressClient:
                 '_yoast_wpseo_opengraph-image-id': str(featured_media_id),
                 '_yoast_wpseo_content_score': '90',  # Assumed good content
                 '_yoast_wpseo_primary_category': '',  # Can be set if needed
+                '_yoast_wpseo_meta-robots-noindex': seo_data.get('noindex', '0'),
+                '_yoast_wpseo_meta-robots-nofollow': '0',  # SEMPRE "0": links internos distribuem PageRank mesmo em noindex
             }
             
             # Get featured image URL from WordPress
