@@ -17,6 +17,7 @@ from .config import (
     CATEGORY_ALIASES,
     PIPELINE_CONFIG,
     SOURCE_CATEGORY_MAP,
+    AI_API_KEYS,
 )
 from .store import Database
 from .feeds import FeedReader
@@ -101,13 +102,13 @@ def assess_content_quality(content_html: str) -> dict:
 
 def semantic_qa_flash(title: str, content_html: str) -> dict:
     """
-    Avaliação semântica via Gemini 2.5 Flash — Camada 2 do QA.
+    Avaliação semântica via Gemini 2.5 Flash Lite — Camada 2 do QA.
     Custo: ~$0.24/mês. Latência: +0.5-1.5s por artigo.
     Ativada APENAS para artigos com score borderline (35-50).
     Detecta: CTA residual, valor informacional, tipo de conteúdo.
     """
     import json as _json
-    import google.generativeai as _genai
+    import requests as _requests
 
     soup = BeautifulSoup(content_html, "html.parser")
     text = soup.get_text(separator=" ", strip=True)[:2000]
@@ -128,10 +129,20 @@ content_type: "news" (notícia quente), "analysis" (análise/opinião), ou "ever
 quality_note: observação editorial em uma linha"""
 
     try:
-        _genai.configure(api_key=AI_API_KEYS[0])
-        model    = _genai.GenerativeModel("gemini-2.5-flash")
-        response = model.generate_content(prompt)
-        raw      = response.text.strip()
+        if not AI_API_KEYS:
+            raise ValueError("Nenhuma chave de API disponível")
+        api_key = AI_API_KEYS[0]
+        url = (
+            "https://generativelanguage.googleapis.com/v1beta/models/"
+            f"gemini-2.5-flash-lite:generateContent?key={api_key}"
+        )
+        payload = {
+            "contents": [{"parts": [{"text": prompt}]}],
+            "generationConfig": {"temperature": 0.2, "maxOutputTokens": 256},
+        }
+        resp = _requests.post(url, json=payload, timeout=15)
+        resp.raise_for_status()
+        raw = resp.json()["candidates"][0]["content"]["parts"][0]["text"].strip()
         # remover marcadores de bloco de código se presentes
         if raw.startswith("```"):
             raw = raw.split("\n", 1)[-1].rsplit("```", 1)[0].strip()
