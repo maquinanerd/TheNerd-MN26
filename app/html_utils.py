@@ -565,6 +565,25 @@ def remove_broken_image_placeholders(html: str) -> str:
     )
 
 
+def strip_ai_tag_links(html: str, domain: str = "maquinanerd.com.br") -> str:
+    """
+    Removes <a href> links invented by the AI that point to /tag/ pages.
+    Keeps the anchor text, removes the link wrapper.
+    This prevents publishing links to tag archives that may not exist.
+    Example: <a href="https://maquinanerd.com.br/tag/the-boys">The Boys</a>
+             → The Boys
+    """
+    if not html or "/tag/" not in html:
+        return html
+    escaped_domain = re.escape(domain)
+    return re.sub(
+        r'<a\s+[^>]*href=["\']https?://(?:www\.)?' + escaped_domain + r'/tag/[^"\'>]+["\'][^>]*>(.*?)</a>',
+        r'\1',
+        html,
+        flags=re.IGNORECASE | re.DOTALL
+    )
+
+
 def strip_naked_internal_links(html: str) -> str:
     """
     Removes paragraphs that contain nothing but a bare URL to an internal

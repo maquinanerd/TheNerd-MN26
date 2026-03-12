@@ -34,6 +34,7 @@ from .html_utils import (
     strip_credits_and_normalize_youtube,
     remove_broken_image_placeholders,
     strip_naked_internal_links,
+    strip_ai_tag_links,
     remove_source_domain_schemas,
     strip_forbidden_cta_sentences,
     detect_forbidden_cta,
@@ -503,6 +504,7 @@ def process_batch(articles: List[Dict[str, Any]], link_map: Dict[str, Any]):
                         # Process images
                         extracted = art_data['extracted']
                         content_html = remove_broken_image_placeholders(content_html)
+                        content_html = strip_ai_tag_links(content_html)
                         content_html = strip_naked_internal_links(content_html)
                         content_html = merge_images_into_content(content_html, extracted.get('images', []))
 
