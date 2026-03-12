@@ -197,6 +197,71 @@ Isso é exatamente o comportamento correto para indexação.
 
 ---
 
+## Análise de segurança — `wordpress.py` não tem canonical
+
+Durante a revisão foi levantada a hipótese de que `wordpress.py` poderia ter um segundo ponto de atribuição do canonical, como:
+
+```python
+"_yoast_wpseo_canonical": yoast_meta.get("_yoast_wpseo_canonical", ""),
+```
+
+Isso enviaria uma string vazia e o comportamento do Yoast com `""` seria incerto.
+
+**Resultado da análise:** não existe nenhuma referência a `_yoast_wpseo_canonical` em `wordpress.py`.
+
+### Por que o meta nunca chegava via `create_post`?
+
+A função `create_post` em `wordpress.py` possui um filtro explícito que descarta todos os campos não reconhecidos pela WordPress REST API:
+
+```python
+safe_fields = ['title', 'slug', 'content', 'excerpt', 'categories', 'tags', 'featured_media', 'status']
+clean_payload = {k: v for k, v in payload.items() if k in safe_fields}
+```
+
+**`meta` não está em `safe_fields`.** Portanto, o dicionário `yoast_meta` (incluindo o canonical externo que existia antes) era **silenciosamente descartado** antes de qualquer requisição ao WordPress. O bug causava dano zero por esse caminho.
+
+### Como o Yoast SEO é realmente aplicado?
+
+Existe uma segunda chamada separada, em `pipeline.py`, logo após o `create_post`:
+
+```python
+wp_post_id = wp_client.create_post(post_payload)
+if wp_post_id and wp_post_id > 0:
+    seo_meta = {
+        'title': rewritten_data.get('seo_title', title)[:70],
+        'description': rewritten_data.get('meta_description', '')[:160],
+        'focuskw': ...,
+    }
+    yoast_ok = wp_client.update_post_yoast_seo(wp_post_id, featured_media_id, seo_meta)
+```
+
+A função `update_post_yoast_seo` não define `_yoast_wpseo_canonical` em nenhum momento. Os campos que ela envia são:
+
+```python
+yoast_fields = {
+    '_yoast_wpseo_title': ...,
+    '_yoast_wpseo_metadesc': ...,
+    '_yoast_wpseo_focuskw': ...,
+    '_yoast_wpseo_opengraph-image': ...,
+    '_yoast_wpseo_opengraph-image-id': ...,
+    '_yoast_wpseo_content_score': '90',
+    '_yoast_wpseo_primary_category': '',
+}
+```
+
+**Sem canonical em nenhum dos dois caminhos de envio.** O Yoast gera self-referencing canonical automaticamente, sem interferência do código.
+
+### Resumo da análise
+
+| Local | Tem `_yoast_wpseo_canonical`? | Observação |
+|---|---|---|
+| `pipeline.py` (antes da fix) | ✅ Sim — **removido** | Nunca chegava ao WP por causa do `safe_fields` |
+| `pipeline.py` (após a fix) | ❌ Não | Substituído por comentário explicativo |
+| `wordpress.py` `create_post` | ❌ Não | `meta` filtrado por `safe_fields` |
+| `wordpress.py` `update_post_yoast_seo` | ❌ Não | Apenas campos OG, title, metadesc, focuskw |
+
+---
+
 ## Commit
 
 ```
