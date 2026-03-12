@@ -1,0 +1,12 @@
+python-dotenv
+requests
+httpx
+beautifulsoup4
+feedparser
+python-dateutil
+lxml
+pytz
+python-slugify
+google-generativeai
+APScheduler
+tmdbv3api

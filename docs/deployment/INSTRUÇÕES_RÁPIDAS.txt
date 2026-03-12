@@ -1,0 +1,132 @@
+🚀 SISTEMA REORGANIZADO E PRONTO PARA USAR
+
+═══════════════════════════════════════════════════════════════════════════════
+
+✅ O QUE FOI CORRIGIDO:
+
+1. JSON AGORA RASTREÁVEL
+   ├─ Antes: JSON salvo com timestamp apenas (20251014-101641.json)
+   │         Impossível saber qual post era sem abrir o arquivo
+   │
+   └─ Depois: JSON salvo com SLUG (jogos-olimpicos-inverno-2026-filmes-series_20260205-143521.json)
+              Identificação INSTANTÂNEA do post pelo nome do arquivo
+
+2. CORRELAÇÃO COMPLETA
+   ├─ JSON       ↔ slug
+   ├─ slug       ↔ WordPress URL
+   ├─ JSON       ↔ tokens log
+   └─ tokens log ↔ wp_post_id
+
+3. NOVO FLUXO
+   RSS Feed
+     ↓
+   Processa com IA
+     ↓
+   Publica no WordPress (cria wp_post_id)
+     ↓
+   SALVA JSON com slug_{timestamp}
+     ↓
+   Registra tokens com slug + wp_post_id
+     ↓
+   🎉 TUDO RASTREÁVEL
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🎯 COMO USAR:
+
+1. EXECUTAR O PROGRAMA (tudo automático):
+   
+   python main.py
+   
+   O sistema irá:
+   - Processar artigos
+   - Publicar no WordPress
+   - Salvar JSON com slug
+   - Registrar tudo nos tokens
+   - TÚD CORRELACIONADO
+
+2. PROCURAR UM POST ESPECÍFICO:
+   
+   Pelo slug:
+   $ python find_json.py "olimpicos"
+   
+   Resultado:
+   ✅ Encontrados 1 arquivo(s) para 'olimpicos'
+   1. ai_response_batch_jogos-olimpicos-inverno-2026-filmes-series_20260205-143521.json
+      Slug:   jogos-olimpicos-inverno-2026-filmes-series
+      Título: Jogos Olímpicos de Inverno 2026: Filmes e Séries...
+   
+   Pela data:
+   $ Get-ChildItem debug/ai_response_batch_*20260205*.json
+   
+   Pelo título:
+   $ python find_json.py "Filmes e Séries"
+
+3. VER STATUS DO SISTEMA:
+   
+   $ python check_system_status.py
+   
+   Mostra:
+   - JSONs salvos
+   - Tokens registrados
+   - Posts publicados
+   - Tudo correlacionado
+
+4. REORGANIZAR JSONs ANTIGOS (opcional):
+   
+   $ python reorganize_jsons.py
+   
+   Renomeia JSONs antigos para novo padrão
+
+═══════════════════════════════════════════════════════════════════════════════
+
+📁 ESTRUTURA DE ARQUIVOS:
+
+debug/
+├── ai_response_batch_jogos-olimpicos-inverno-2026-filmes-series_20260205-143521.json ← NOVO!
+├── ai_response_batch_outro-slug_20260205-144015.json                              ← NOVO!
+└── failed_ai_*.json.txt                                                           ← Erros (mantido)
+
+logs/
+└── tokens/
+    └── tokens_2026-02-05.jsonl  ← Todos os registros com slug + wp_post_id
+
+WordPress:
+└── Posts com ID, slug, e URL na Máquina Nerd
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🔍 EXEMPLO PRÁTICO:
+
+Você vê a URL publicada:
+https://www.maquinanerd.com.br/jogos-olimpicos-inverno-2026-filmes-series/
+
+Quer encontrar o JSON:
+$ python find_json.py "jogos-olimpicos-inverno"
+
+Resultado:
+✅ ai_response_batch_jogos-olimpicos-inverno-2026-filmes-series_20260205-143521.json
+
+Quer saber o WordPress ID:
+$ Select-String logs/tokens/tokens_2026-02-05.jsonl -Pattern "jogos-olimpicos"
+
+Resultado:
+{
+  "wp_post_id": 71064,
+  "article_title": "Jogos Olímpicos de Inverno 2026: Filmes e Séries para Assistir",
+  "source_url": "https://screenrant.com/best-movies-tv-shows-watch-2026-winter-olympics/",
+  "metadata": {"slug": "jogos-olimpicos-inverno-2026-filmes-series"}
+}
+
+Tudo conectado! 🎉
+
+═══════════════════════════════════════════════════════════════════════════════
+
+✅ TUDO PRONTO!
+
+Basta executar:
+python main.py
+
+E o sistema irá salvar JSONs, registrar tokens, tudo correlacionado e rastreável.
+
+═══════════════════════════════════════════════════════════════════════════════

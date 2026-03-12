@@ -1,0 +1,99 @@
+🎯 COMANDOS RÁPIDOS
+
+═══════════════════════════════════════════════════════════════════════════════
+
+⚡ EXECUTAR O SISTEMA (TUDO AUTOMÁTICO):
+
+python main.py
+
+
+🔍 PROCURAR UM JSON:
+
+# By slug/keyword
+python find_json.py "olimpicos"
+python find_json.py "filmes"
+python find_json.py "jogos-olimpicos-inverno"
+
+# By date  
+Get-ChildItem debug/ai_response_batch_*20260205*.json
+
+# By exact filename pattern
+Get-ChildItem debug/ai_response_batch_*olimpicos*.json
+
+
+📊 VER STATUS DO SISTEMA:
+
+python check_system_status.py
+
+
+🔄 REORGANIZAR JSONs ANTIGOS:
+
+python reorganize_jsons.py
+
+
+📈 VERIFICAR TOKENS:
+
+# Últimos tokens registrados
+Get-Content logs/tokens/tokens_2026-02-05.jsonl | ConvertFrom-Json | Select-Object -Last 5
+
+# Procurar tokens de um post específico
+Select-String logs/tokens/tokens_2026-02-05.jsonl -Pattern "olimpicos"
+
+# Ver posts publicados apenas
+Get-Content logs/tokens/tokens_2026-02-05.jsonl | ConvertFrom-Json | Where-Object {$_.wp_post_id -ne $null}
+
+
+📄 CONSULTAS ÚTEIS:
+
+# Listar todos os JSONs de hoje com slugs
+Get-ChildItem debug/ai_response_batch_*20260205*.json | ForEach-Object {
+    $json = Get-Content $_ | ConvertFrom-Json
+    Write-Host "- $($json.titulo_final)"
+    Write-Host "  slug: $($json.slug)"
+    Write-Host ""
+}
+
+# Contar posts processados e publicados
+$records = Get-Content logs/tokens/tokens_2026-02-05.jsonl | ConvertFrom-Json
+$processed = ($records | Where-Object {$_.api_type -eq "gemini"}).Count
+$published = ($records | Where-Object {$_.api_type -eq "publishing"}).Count
+Write-Host "Processados: $processed | Publicados: $published"
+
+# Tokens totais do dia
+$tokens = Get-Content logs/tokens/tokens_2026-02-05.jsonl | ConvertFrom-Json
+$entrada = ($tokens | Measure-Object -Property prompt_tokens -Sum).Sum
+$saida = ($tokens | Measure-Object -Property completion_tokens -Sum).Sum
+Write-Host "Entrada: $entrada | Saída: $saida | Total: $($entrada + $saida)"
+
+
+🔗 CORRELAÇÃO (JSON ↔ TOKENS ↔ WORDPRESS):
+
+# Dado um slug, encontrar JSON
+$slug = "jogos-olimpicos-inverno-2026-filmes-series"
+Get-ChildItem debug/*$slug*.json
+
+# Dado um JSON, encontrar tokens
+$json = Get-Content "debug/ai_response_batch_jogos-olimpicos-inverno-2026-filmes-series_20260205-143521.json" | ConvertFrom-Json
+Select-String logs/tokens/tokens_2026-02-05.jsonl -Pattern $json.titulo_final
+
+# Dado tokens, encontrar WordPress ID
+$wp_id = (Get-Content logs/tokens/tokens_2026-02-05.jsonl | ConvertFrom-Json | Where-Object {$_.article_title -like "*olimpicos*"} | Select-Object wp_post_id).wp_post_id
+Write-Host "WordPress ID: $wp_id"
+Write-Host "URL: https://www.maquinanerd.com.br/?p=$wp_id"
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+✅ TUDO PRONTO!
+
+Basta executar:
+  python main.py
+
+E o sistema cuida de tudo:
+  ✅ Processa artigos
+  ✅ Publica no WordPress
+  ✅ Salva JSON com SLUG
+  ✅ Registra tokens
+  ✅ TUDO CORRELACIONADO
+
+═══════════════════════════════════════════════════════════════════════════════

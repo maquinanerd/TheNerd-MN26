@@ -1,0 +1,55 @@
+📋 RESUMO DAS MUDANÇAS IMPLEMENTADAS
+
+═══════════════════════════════════════════════════════════════════════════════
+
+✅ 1. MODIFICAÇÃO NO CODE (app/pipeline.py)
+   └─ JSONs agora são salvos com SLUG no nome do arquivo
+   └─ Formato: ai_response_batch_{slug}_{YYYYMMDD-HHMMSS}.json
+   └─ Salvo APÓS publicação no WordPress (associado ao wp_post_id)
+
+✅ 2. SCRIPTS DE APOIO CRIADOS
+   ├─ reorganize_jsons.py     → Reorganiza JSONs antigos para novo padrão
+   ├─ find_json.py            → Procura JSON por slug/título
+   └─ NOVO_SISTEMA_JSON.md    → Documentação completa
+
+✅ 3. CORRELAÇÃO COMPLETA
+   POST → SLUG → JSON FILE → TOKENS LOG → WORDPRESS ID
+   
+   Exemplo:
+   "Jogos Olímpicos de Inverno 2026: Filmes..."
+   ↓
+   slug = "jogos-olimpicos-inverno-2026-filmes-series"
+   ↓
+   JSON = "debug/ai_response_batch_jogos-olimpicos-inverno-2026-filmes-series_20260205-143521.json"
+   ↓
+   TOKENS = logs/tokens/tokens_2026-02-05.jsonl (com slug e wp_post_id)
+   ↓
+   WORDPRESS = ID 71064
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🚀 PRÓXIMO PASSO: EXECUTE O PROGRAMA
+
+python main.py
+
+O sistema irá:
+1. ✅ Processar artigos em lote
+2. ✅ Publicar no WordPress
+3. ✅ Salvar JSON com SLUG (identifica o post facilmente)
+4. ✅ Registrar tokens com slug + wp_post_id
+5. ✅ Tudo rastreável e correlacionado
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🔍 ENCONTRANDO POSTS DEPOIS
+
+Procurar pelo slug da URL:
+   python find_json.py "olimpicos"
+
+Listar JSONs de hoje:
+   Get-ChildItem debug/ai_response_batch_*20260205*.json
+
+Ver tokens de um post específico:
+   Select-String -Path "logs/tokens/tokens_2026-02-05.jsonl" -Pattern "olimpicos"
+
+═══════════════════════════════════════════════════════════════════════════════

@@ -1,0 +1,70 @@
+﻿# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+venv/
+.venv/
+env/
+.env/
+ENV/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+!.env.tmdb.example
+
+# Databases & data files
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+data/app.db
+
+# Logs
+logs/
+*.log
+pipeline.log
+test_pipeline_yoast.log
+
+# Debug output
+debug/
+
+# Test / cache
+.pytest_cache/
+.cache/
+htmlcov/
+.coverage
+coverage.xml
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Node (if any frontend tooling)
+node_modules/
+
+# Replit
+.replit
+.local/
+uv.lock
+
+# Build outputs
+output.txt
+reports/
