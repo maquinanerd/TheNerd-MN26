@@ -49,49 +49,74 @@ REGRAS DE CONTEÚDO E SEO (NÃO IGNORAR):
 
 REGRAS OBRIGATÓRIAS DE PROFUNDIDADE E ESTRUTURA (NÃO IGNORAR):
 
-🚨 REGRA ABSOLUTA — ESTA É UMA ADAPTAÇÃO, NÃO UM RESUMO:
-Sua tarefa é ADAPTAR o conteúdo original para o português brasileiro.
-NÃO é resumir. NÃO é selecionar. NÃO é cortar.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PASSO 0 — ANTES DE TUDO: DETECTAR O TIPO DO CONTEÚDO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Leia o conteúdo original e classifique em UM dos tipos abaixo.
+O tipo determina qual estrutura usar. NÃO aplique estrutura de notícia em listicle.
 
-CADA parágrafo da fonte deve ter um parágrafo correspondente no conteudo_final.
-CADA fato, número, nome e dado da fonte DEVE aparecer no artigo.
-CADA imagem (<img>, <figure>) presente na fonte DEVE ser preservada no conteudo_final.
+TIPO A — NOTÍCIA/ANÁLISE:
+  Sinais: uma notícia central, anúncio, renovação, lançamento, trailer, bilheteria.
+  Exemplos: "Série X renovada para 2ª temporada", "Marvel anuncia Fase 6"
 
-Exemplos do que NUNCA pode ser omitido:
-- Números de audiência ("20,6 milhões de espectadores" → escrever "20,6 milhões de espectadores")
-- Percentuais e scores ("47% no Rotten Tomatoes" → escrever "47% no Rotten Tomatoes")
-- Elenco listado → listar TODOS os nomes e personagens
-- Recordes históricos ("maior estreia da CBS desde Young Sheldon em 2017" → manter)
-- Estimativas de lançamento ("primavera de 2027" → mencionar)
-- Nomes de outras séries citadas → todos devem aparecer
+TIPO B — LISTICLE/RANKING/GUIA:
+  Sinais: lista de títulos/itens, ranking, "melhores", "piores", "X filmes para ver".
+  Exemplos: "As 10 melhores minisséries", "Filmes de terror para maratonar"
 
-PROIBIDO sumarizar: "a série teve bom desempenho" quando a fonte diz "20,6M viewers e record CBS".
-PROIBIDO padding: não adicione frases genéricas que não existam na fonte.
-PROIBIDO inventar dados ou opiniões que não estão na fonte original.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🚨 REGRA ABSOLUTA — PRESERVAÇÃO DO CONTEÚDO ORIGINAL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+É PROIBIDO remover, resumir, fundir ou omitir qualquer item do conteúdo original.
+- TODAS as imagens (<img>, <figure>, <picture>) devem ser preservadas exatamente onde estão
+- TODOS os itens de uma lista devem aparecer no artigo final
+- TODOS os dados verificáveis (números, datas, nomes, scores) devem estar presentes
+- Se a fonte tem 10 séries listadas → o artigo final tem 10 séries listadas
+- Se a fonte tem uma imagem de Kate Winslet → essa imagem está no artigo final
+PROIBIDO: cortar itens "por ser muito longo", "para ficar mais conciso" ou qualquer outro motivo.
 
-HIERARQUIA DE HEADINGS (OBRIGATÓRIA):
-- Máximo 6 tags <h2> por artigo. NUNCA mais que isso.
-- Cada <h2> DEVE ter pelo menos um <h3> filho com subtópico específico.
-- PROIBIDO: sequência de <h2> seguidos sem nenhum <h3> entre eles.
-
-ESTRUTURA OBRIGATÓRIA DO ARTIGO:
-1. Parágrafo de abertura forte (lead: O que, Quem, Onde, Por quê)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ESTRUTURA PARA TIPO A — NOTÍCIA/ANÁLISE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. Parágrafo de abertura (lead: O que, Quem, Onde, Por quê — com dados reais)
 2. <h2>O que você precisa saber</h2>  ← SEMPRE o primeiro H2
    <ul>
-     <li>[O que aconteceu em uma frase]</li>
-     <li>[Por que isso importa para o fã]</li>
-     <li>[O que esperar a seguir]</li>
+     <li>[fato central em uma frase com dado verificável]</li>
+     <li>[por que isso importa — com contexto real]</li>
+     <li>[o que vem a seguir — com dado ou estimativa da fonte]</li>
    </ul>
-3. [2-4 H2s de desenvolvimento, cada um com H3s filhos]
+3. [2–4 H2s de desenvolvimento, cada um com pelo menos 1 H3 filho]
 4. <h2>Nossa Análise</h2>  ← SEMPRE o último H2
-   Um parágrafo com perspectiva editorial única. Use voz ativa.
-   Conecte com outras obras/franquias do mesmo universo.
 
-PROIBIDO:
-- Mais de 6 tags <h2>
-- Sequência de <h2> sem <h3> intercalado
-- Ausência do bloco "O que você precisa saber"
-- Ausência da seção "Nossa Análise"
+ANTI-GENÉRICO (obrigatório para Tipo A):
+Os H2/H3 devem usar dados do texto, não fórmulas vazias.
+❌ PROIBIDO: "Desenvolvimento da Trama", "Expectativas para a Nova Temporada", "O Futuro da Série"
+✅ OBRIGATÓRIO: usar números, nomes, fatos — ex: "20,6 milhões de espectadores na estreia da CBS",
+   "47% no Rotten Tomatoes — menor nota da franquia Yellowstone", "Elenco da 1ª temporada: quem volta"
+
+TAMANHO: cubra TODOS os fatos da fonte. Nenhum dado omitido.
+PROIBIDO PADDING: sem parágrafos genéricos ("os fãs podem esperar...", "a série tem potencial...").
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ESTRUTURA PARA TIPO B — LISTICLE/RANKING/GUIA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+NÃO USE a estrutura de notícia. NÃO force "O que você precisa saber" nem "Nossa Análise".
+
+1. Parágrafo de introdução (contexto do tema, por que a lista é relevante)
+2. Cada item da lista original vira um <h2> ou <h3> — mantendo a ordem original
+3. Para cada item: preservar descrição, imagem, contexto e dados da fonte original
+4. Parágrafo de fechamento opcional (síntese editorial breve)
+
+REGRAS ESPECÍFICAS PARA LISTICLE:
+- Preserve TODOS os itens da lista original — nenhum pode ser cortado
+- Preserve TODAS as imagens de cada item — na posição original
+- Preserve os subtítulos descritivos de cada item
+- Não invente ranking numérico se a fonte não usa ranking numérico
+- Não adicione itens que não estão na fonte
+
+HIERARQUIA DE HEADINGS (válida para ambos os tipos):
+- Máximo 6 tags <h2> por artigo (exceto listicles com mais de 6 itens — neste caso, use quantos forem necessários)
+- Cada <h2> de desenvolvimento DEVE ter pelo menos 1 <h3> filho
+- PROIBIDO: sequência de <h2> seguidos sem <h3> entre eles (exceto em listicles onde cada item é um <h2>)
 ---
 
 A SUA RESPOSTA DEVE SER ESTRITAMENTE UM OBJETO JSON VÁLIDO. NÃO INCLUA NENHUM TEXTO, EXPLICAÇÃO OU FORMATAÇÃO MARKDOWN FORA DO OBJETO JSON.
@@ -311,10 +336,13 @@ CONTEÚDO (conteudo_final):
 □ Sem "veja", "entenda", "clique aqui"? Se sim, REMOVER.
 □ Links internos com https:// completo? Se relativo ou faltando, REFAZER.
 □ Parágrafos com máx 3–4 frases? Se mais longo, QUEBRAR.
-□ Primeiro H2 é "O que você precisa saber"? Se não, REFAZER.
-□ Último H2 é "Nossa Análise"? Se não, REFAZER.
-□ Cada H2 tem pelo menos um H3 filho? Se não, ADICIONAR.
-□ Máximo 6 tags <h2>? Se mais, REMOVER.
+□ [NOTÍCIA] Primeiro H2 é "O que você precisa saber"? Se não, REFAZER.
+□ [NOTÍCIA] Último H2 é "Nossa Análise"? Se não, REFAZER.
+□ [NOTÍCIA] Cada H2 de desenvolvimento tem pelo menos um H3 filho? Se não, ADICIONAR.
+□ [NOTÍCIA] Máximo 6 tags <h2>? Se mais, REMOVER.
+□ [LISTICLE] Todos os itens da lista original preservados? Se não, REFAZER.
+□ [LISTICLE] Todas as imagens de cada item preservadas? Se não, REFAZER.
+□ [AMBOS] Nenhum dado, número ou nome da fonte foi omitido? Se sim, REFAZER.
 □ Palavras-chave no primeiro parágrafo? Se não, ADICIONAR.
 □ Imagens com <figure> e <figcaption>? Se sem legenda, ADICIONAR.
 
