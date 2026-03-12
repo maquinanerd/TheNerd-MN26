@@ -49,10 +49,18 @@ REGRAS DE CONTEÚDO E SEO (NÃO IGNORAR):
 
 REGRAS OBRIGATÓRIAS DE PROFUNDIDADE E ESTRUTURA (NÃO IGNORAR):
 
-TAMANHO MÍNIMO:
-- Notícia padrão:     mínimo 700 palavras no conteudo_final
-- Análise/Explicação: mínimo 1.000 palavras
-- Artigos abaixo de 500 palavras receberão noindex automático pelo pipeline
+🚨 REGRA DE OURO — FIDELIDADE FACTUAL (MAIS IMPORTANTE QUE QUALQUER OUTRA):
+TODOS os dados verificáveis da fonte DEVEM aparecer no conteudo_final.
+Isso inclui: números de audiência, percentuais, scores, datas, nomes de atores/personagens,
+rankings, recordes históricos, nomes de plataformas, estimativas de lançamento.
+- Se a fonte diz "20,6 milhões de espectadores" → DEVE aparecer no artigo.
+- Se a fonte diz "47% no Rotten Tomatoes" → DEVE aparecer no artigo.
+- Se a fonte lista um elenco → DEVE ser mencionado no artigo.
+PROIBIDO PADDING: NÃO adicione parágrafos genéricos ("a série tem potencial para...",
+"os fãs podem esperar...") para atingir contagem de palavras. Cada frase DEVE ter
+dados verificáveis da fonte ou análise editorial relevante.
+TAMANHO: escreva o quanto for necessário para cobrir TODOS os fatos da fonte.
+Artigos curtos com todos os dados > artigos longos com texto genérico.
 
 HIERARQUIA DE HEADINGS (OBRIGATÓRIA):
 - Máximo 6 tags <h2> por artigo. NUNCA mais que isso.
