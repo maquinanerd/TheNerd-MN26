@@ -293,6 +293,28 @@ class WordPressClient:
                 logger.warning(f"Response body: {e.response.text}")
             return False
 
+    def find_media_by_search(self, keyword: str) -> Optional[int]:
+        """
+        Busca na biblioteca de mídia do WordPress uma imagem cujo título contenha
+        a keyword informada. Retorna o ID da primeira imagem encontrada, ou None.
+        Usado pelos evergreens para reaproveitar imagens já enviadas pelo pipeline.
+        """
+        if not keyword:
+            return None
+        try:
+            endpoint = f"{self.api_url}/media"
+            params = {"search": keyword, "media_type": "image", "per_page": 5, "orderby": "date", "order": "desc"}
+            r = self.session.get(endpoint, params=params, timeout=15)
+            r.raise_for_status()
+            items = r.json()
+            if items:
+                media_id = int(items[0]["id"])
+                logger.info(f"[EVERGREEN] Imagem reutilizada da biblioteca | keyword='{keyword}' | media_id={media_id}")
+                return media_id
+        except Exception as exc:
+            logger.debug(f"[EVERGREEN] find_media_by_search('{keyword}'): {exc}")
+        return None
+
     def find_related_posts(self, term: str, limit: int = 3) -> List[Dict[str, str]]:
         """Searches for posts on the site and returns their title and URL."""
         if not term:

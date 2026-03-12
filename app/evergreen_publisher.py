@@ -210,11 +210,18 @@ def process_evergreen_queue(max_per_cycle: int = 2) -> int:
                 if not content_html or len(content_html) < 200:
                     raise ValueError(f"Conteúdo vazio ou muito curto ({len(content_html)} chars)")
 
+                # Buscar imagem de destaque reutilizável da biblioteca WP
+                featured_media_id = wp_client.find_media_by_search(entity)
+                if not featured_media_id:
+                    # Fallback: buscar pelo título da entidade sem o template
+                    featured_media_id = wp_client.find_media_by_search(entity.split()[0])
+
                 post_payload = {
                     "title":      title,
                     "content":    content_html,
                     "categories": json.loads(cat_json),
                     "status":     "publish",
+                    "featured_media": featured_media_id or 0,
                     "meta": {
                         "_yoast_wpseo_meta-robots-noindex":  "0",
                         "_yoast_wpseo_meta-robots-nofollow": "0",
