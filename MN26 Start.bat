@@ -10,21 +10,37 @@ echo   TheNerd MN26 — Iniciando Pipeline
 echo  ================================================
 echo.
 
-:: Ativa o ambiente virtual (preferencia para .venv, fallback para venv)
-if exist ".venv\Scripts\activate.bat" (
-    call .venv\Scripts\activate.bat
-) else if exist "venv\Scripts\activate.bat" (
-    call venv\Scripts\activate.bat
-) else (
-    echo [AVISO] Nenhum ambiente virtual encontrado.
-    echo         Usando Python do sistema...
+:: Seleciona o Python do .venv ou venv (sem depender do PATH do sistema)
+set PYTHON_EXE=
+
+if exist ".venv\Scripts\python.exe" (
+    .venv\Scripts\python.exe -c "import sys" >nul 2>&1
+    if not errorlevel 1 (
+        set PYTHON_EXE=.venv\Scripts\python.exe
+    )
+)
+
+if "%PYTHON_EXE%"=="" (
+    if exist "venv\Scripts\python.exe" (
+        venv\Scripts\python.exe -c "import sys" >nul 2>&1
+        if not errorlevel 1 (
+            set PYTHON_EXE=venv\Scripts\python.exe
+        )
+    )
+)
+
+if "%PYTHON_EXE%"=="" (
+    echo [AVISO] Ambiente virtual nao encontrado ou invalido.
+    echo         Tentando Python do sistema (py launcher)...
+    set PYTHON_EXE=py
     echo.
 )
 
+echo [INFO] Usando: %PYTHON_EXE%
 echo [INFO] Iniciando pipeline...
 echo.
 
-python main.py
+%PYTHON_EXE% main.py
 
 echo.
 echo  ================================================
