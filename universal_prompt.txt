@@ -161,6 +161,7 @@ DETALHES PARA CADA CAMPO DO JSON
  
 2. *conteudo_final* (HTML)
 - Reestruture em parágrafos curtos dentro de <p>.
+- NUNCA use <h1> no conteudo_final. O WordPress injeta o título como <h1> automaticamente. Qualquer heading deve começar em <h2>.
 - Preserve integralmente <img>, <figure> e <iframe>.
 - Organização das imagens:
   - Posicione cada imagem logo após o parágrafo relacionado ao conteúdo dela.
@@ -332,6 +333,7 @@ TÍTULO (titulo_final):
 
 CONTEÚDO (conteudo_final):
 □ Sem menção a concorrentes (Omelete, IGN, Jovem Nerd)? Se sim, REMOVER.
+□ Sem <h1> no conteudo_final (WordPress já injeta o H1 do título)? Se sim, REBAIXAR para <h2>.
 □ Sem hashtags (#)? Se sim, REMOVER.
 □ Sem "veja", "entenda", "clique aqui"? Se sim, REMOVER.
 □ Links internos com https:// completo? Se relativo ou faltando, REFAZER.

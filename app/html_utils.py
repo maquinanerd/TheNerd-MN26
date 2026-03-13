@@ -565,6 +565,19 @@ def remove_broken_image_placeholders(html: str) -> str:
     )
 
 
+def downgrade_h1_to_h2(html: str) -> str:
+    """
+    Replaces any <h1>...</h1> in the article body with <h2>...</h2>.
+    The WordPress title is already injected as H1 by the theme/Yoast.
+    A second H1 in the content is a duplicate and hurts SEO.
+    """
+    if not html or '<h1' not in html.lower():
+        return html
+    html = re.sub(r'<h1(\s[^>]*)?>', lambda m: '<h2' + (m.group(1) or '') + '>', html, flags=re.IGNORECASE)
+    html = re.sub(r'</h1>', '</h2>', html, flags=re.IGNORECASE)
+    return html
+
+
 def strip_ai_tag_links(html: str, domain: str = "maquinanerd.com.br") -> str:
     """
     Removes <a href> links invented by the AI that point to /tag/ pages.
