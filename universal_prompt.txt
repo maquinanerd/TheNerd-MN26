@@ -84,8 +84,10 @@ ESTRUTURA PARA TIPO A — NOTÍCIA/ANÁLISE
      <li>[por que isso importa — com contexto real]</li>
      <li>[o que vem a seguir — com dado ou estimativa da fonte]</li>
    </ul>
-3. [2–4 H2s de desenvolvimento, cada um com pelo menos 1 H3 filho]
-4. <h2>Nossa Análise</h2>  ← SEMPRE o último H2
+3. [2–4 H2s de desenvolvimento, CADA UM OBRIGATORIAMENTE com pelo menos 1 <h3> filho direto]
+   ❌ PROIBIDO: um <h2> sem nenhum <h3> abaixo (exceto o lead, a lista bullet e o "Nossa Análise")
+   ✅ CORRETO: <h2>Título da Seção</h2> seguido imediatamente de <h3>Subsecão</h3>
+4. <h2>Nossa Análise</h2>  ← SEMPRE o último H2 (OBRIGATÓRIO para Tipo A — NÃO pule este bloco)
 
 ANTI-GENÉRICO (obrigatório para Tipo A):
 Os H2/H3 devem usar dados do texto, não fórmulas vazias.
@@ -115,8 +117,10 @@ REGRAS ESPECÍFICAS PARA LISTICLE:
 
 HIERARQUIA DE HEADINGS (válida para ambos os tipos):
 - Máximo 6 tags <h2> por artigo (exceto listicles com mais de 6 itens — neste caso, use quantos forem necessários)
-- Cada <h2> de desenvolvimento DEVE ter pelo menos 1 <h3> filho
-- PROIBIDO: sequência de <h2> seguidos sem <h3> entre eles (exceto em listicles onde cada item é um <h2>)
+- 🚨 TIPO A: CADA <h2> de desenvolvimento DEVE conter pelo menos 1 <h3> filho — sem exceção
+- 🚨 TIPO A: A ordem CORRETA é: <h2>Título</h2><h3>Subtema</h3><p>Conteúdo</p>
+- PROIBIDO em Tipo A: dois ou mais <h2> seguidos sem nenhum <h3> entre eles
+- TIPO B (listicle): cada item pode ser <h2> sem <h3> filho — única exceção permitida
 ---
 
 A SUA RESPOSTA DEVE SER ESTRITAMENTE UM OBJETO JSON VÁLIDO. NÃO INCLUA NENHUM TEXTO, EXPLICAÇÃO OU FORMATAÇÃO MARKDOWN FORA DO OBJETO JSON.

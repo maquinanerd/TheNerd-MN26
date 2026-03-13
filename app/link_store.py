@@ -75,6 +75,39 @@ def get_related(entity: str = "", category: str = "", limit: int = 3) -> list:
         return []
 
 
+def get_link_map() -> dict:
+    """
+    Retorna todos os artigos recentes do link_store no formato esperado
+    por add_internal_links(). Chamado a cada batch para manter dados frescos.
+    """
+    try:
+        with _conn() as c:
+            rows = c.execute(
+                "SELECT title, url, entity FROM link_store ORDER BY published DESC LIMIT 200"
+            ).fetchall()
+        posts = []
+        for title, url, entity in rows:
+            kws = []
+            # Entity curta (ex: "marvel", "one piece") → ótima para match
+            if entity and 3 <= len(entity) <= 50:
+                kws.append(entity)
+            # Extrair assunto do título antes do primeiro ":"
+            # Ex: "Star Trek: Vilão..." → "Star Trek"
+            if title:
+                subject = title.split(":")[0].strip()
+                if 3 <= len(subject) <= 50 and subject not in kws:
+                    kws.append(subject)
+                # Título completo como fallback de menor prioridade
+                if len(title) >= 5 and title not in kws:
+                    kws.append(title)
+            if kws:
+                posts.append({'link': url, 'keywords': kws, 'categories': []})
+        return {'posts': posts}
+    except Exception as e:
+        logger.warning(f"[LINKS] Erro ao construir link_map: {e}")
+        return {'posts': []}
+
+
 def format_for_prompt(links: list) -> str:
     """
     Formata links como instrução legível para o prompt do Gemini.

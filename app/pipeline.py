@@ -42,7 +42,7 @@ from .html_utils import (
     html_to_gutenberg_blocks,
 )
 from .internal_linking import add_internal_links
-from .link_store import save_article as ls_save_article, get_related as ls_get_related, format_for_prompt as ls_format_links
+from .link_store import save_article as ls_save_article, get_related as ls_get_related, format_for_prompt as ls_format_links, get_link_map as ls_get_link_map
 from .task_queue import ArticleQueue
 from bs4 import BeautifulSoup
 from .cleaners import clean_html_for_globo_esporte
@@ -754,13 +754,25 @@ def worker_loop():
     - Max 10 AI requests per cycle (to avoid RPM violations)
     - 5-minute pause after hitting request limit
     """
-    link_map = {}
+    # Carregar link_map estático (fallback) + dados dinâmicos do SQLite
+    static_link_map = {}
     try:
         with open('data/internal_links.json', 'r', encoding='utf-8') as f:
-            link_map = json.load(f)
+            static_link_map = json.load(f)
     except (FileNotFoundError, json.JSONDecodeError):
-        logger.warning("Could not load internal_links.json for worker.")
+        pass  # JSON vazio é esperado; DB é a fonte primária
 
+    def _refresh_link_map() -> dict:
+        """Monta link_map fresco: SQLite (primário) + JSON estático (fallback)."""
+        db_map = ls_get_link_map()
+        json_posts = static_link_map.get('posts', [])
+        db_urls = {p['link'] for p in db_map['posts']}
+        extra = [p for p in json_posts if p['link'] not in db_urls]
+        all_posts = db_map['posts'] + extra
+        logger.info(f"[LINKS] link_map atualizado: {len(db_map['posts'])} do DB + {len(extra)} do JSON = {len(all_posts)} total")
+        return {'posts': all_posts}
+
+    link_map = _refresh_link_map()
     requests_in_cycle = 0
     MAX_REQUESTS_PER_CYCLE = 10
     PAUSE_ON_LIMIT_S = 300  # 5 minutos
@@ -807,6 +819,9 @@ def worker_loop():
             requests_in_cycle = 0
             logger.info("[RPM PROTECTION] Resumindo pipeline após pausa de 5 minutos.")
             continue
+
+        # Refresh link_map before processing to pick up articles published this session
+        link_map = _refresh_link_map()
 
         # Process batch and count requests
         process_batch(articles, link_map)
