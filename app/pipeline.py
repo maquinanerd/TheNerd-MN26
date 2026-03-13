@@ -668,28 +668,14 @@ def process_batch(articles: List[Dict[str, Any]], link_map: Dict[str, Any]):
                                         article_title=title
                                     )
 
-                                    # ✅ EVENT SCORING — decide se gera cluster evergreen
+                                    # ✅ EVENT SCORING — desabilitado temporariamente (evergreen pausado)
                                     from .cluster_engine import score_event
-                                    from .evergreen_publisher import schedule_cluster_pages
                                     event = score_event({
                                         "title":   title,
                                         "content": content_html,
                                         "tags":    rewritten_data.get("tags_sugeridas", []),
                                     })
-                                    if event["should_cluster"]:
-                                        logger.info(
-                                            f"[CLUSTER] Score {event['score']} | "
-                                            f"entity={event['entity']} | "
-                                            f"templates={event['templates'][:3]} | "
-                                            f"post_id={wp_post_id}"
-                                        )
-                                        schedule_cluster_pages(
-                                            entity=event["entity"],
-                                            source_post_id=wp_post_id,
-                                            source_title=title,
-                                            templates=event["templates"],
-                                            category_ids=list(final_category_ids),
-                                        )
+                                    # schedule_cluster_pages desabilitado — evergreen pausado
 
                                     # ✅ LINK STORE — salvar artigo publicado para links internos futuros
                                     ls_save_article(
@@ -836,11 +822,12 @@ def run_pipeline_cycle():
     """Read feeds and enqueue articles for the worker."""
     logger.info("Starting new pipeline ingestion cycle.")
 
-    # ✅ EVERGREEN: processar fila pendente ANTES de ingerir novo RSS
-    from .evergreen_publisher import process_evergreen_queue
-    ev_count = process_evergreen_queue(max_per_cycle=2)
-    if ev_count:
-        logger.info(f"[CYCLE] {ev_count} evergreen(s) publicado(s) neste ciclo")
+    # EVERGREEN: pausado temporariamente
+    # from .evergreen_publisher import process_evergreen_queue
+    # ev_count = process_evergreen_queue(max_per_cycle=2)
+    # if ev_count:
+    #     logger.info(f"[CYCLE] {ev_count} evergreen(s) publicado(s) neste ciclo")
+    logger.debug("[CYCLE] Evergreen pausado.")
 
     db = Database()
     feed_reader = FeedReader(user_agent=PIPELINE_CONFIG.get('publisher_name', 'Bot'))
