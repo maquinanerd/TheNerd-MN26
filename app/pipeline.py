@@ -90,9 +90,6 @@ def assess_content_quality(content_html: str) -> dict:
     if   len(int_links) >= 2: score += 20
     elif len(int_links) >= 1: score += 10
 
-    # 4. Bloco editorial "Nossa Análise" (do novo prompt)
-    if "nossa análise" in text.lower(): score += 15
-
     should_index = score >= 45
     reason = (
         f"score={score} | {words}w | h3={'sim' if soup.find('h3') else 'não'}"

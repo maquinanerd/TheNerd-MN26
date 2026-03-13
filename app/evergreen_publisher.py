@@ -26,8 +26,6 @@ ESTRUTURA OBRIGATÓRIA:
 - <h2>O que você precisa saber</h2> com 3 bullets (<ul><li>)
 - <h2>Cronologia Completa</h2> com <h3>s por período ou fase
 - <h2>Obras Essenciais em Ordem</h2> com <h3>s por tipo (filmes, séries, games)
-- <h2>Nossa Análise</h2> — perspectiva editorial sobre a franquia em voz ativa
-
 Mínimo 900 palavras. Cada <h2> DEVE ter pelo menos um <h3> filho.
 Retorne APENAS o HTML do corpo do artigo (sem <html>, <head> ou <body>).""",
 
@@ -40,8 +38,6 @@ ESTRUTURA OBRIGATÓRIA:
 - <h2>O que você precisa saber</h2> com 3 bullets (<ul><li>)
 - <h2>Personagens Principais</h2> com <h3> para cada personagem central
 - <h2>Personagens Secundários Importantes</h2> com <h3>s por grupo ou arco
-- <h2>Nossa Análise</h2> — sobre o elenco, escolhas criativas e impacto cultural
-
 Mínimo 900 palavras. Cada <h2> DEVE ter pelo menos um <h3> filho.
 Retorne APENAS o HTML do corpo do artigo (sem <html>, <head> ou <body>).""",
 
@@ -54,8 +50,6 @@ ESTRUTURA OBRIGATÓRIA:
 - <h2>O que você precisa saber</h2> com 3 bullets (<ul><li>)
 - <h2>Vilões Principais</h2> com <h3> para cada vilão (origem, motivação, poderes)
 - <h2>Ranking: do Menos ao Mais Poderoso</h2> com <h3>s por tier
-- <h2>Nossa Análise</h2> — qual vilão é mais bem escrito e por quê, em voz ativa
-
 Mínimo 900 palavras. Cada <h2> DEVE ter pelo menos um <h3> filho.
 Retorne APENAS o HTML do corpo do artigo (sem <html>, <head> ou <body>).""",
 
@@ -68,8 +62,6 @@ ESTRUTURA OBRIGATÓRIA:
 - <h2>O que você precisa saber</h2> com 3 bullets (<ul><li>)
 - <h2>O Que Acontece no Final</h2> com <h3>s por cena ou capítulo
 - <h2>Teorias e Interpretações</h2> com <h3>s por teoria principal
-- <h2>Nossa Análise</h2> — avaliação editorial e impacto no universo da franquia
-
 Mínimo 900 palavras. Cada <h2> DEVE ter pelo menos um <h3> filho.
 Retorne APENAS o HTML do corpo do artigo (sem <html>, <head> ou <body>).""",
 
@@ -82,8 +74,6 @@ ESTRUTURA OBRIGATÓRIA:
 - <h2>O que você precisa saber</h2> com 3 bullets (<ul><li>)
 - <h2>Easter Eggs Visuais</h2> com <h3>s por cena ou episódio
 - <h2>Referências a Outras Obras</h2> com <h3>s por franquia referenciada
-- <h2>Nossa Análise</h2> — os easter eggs mais impactantes e o que revelam sobre a produção
-
 Mínimo 900 palavras. Cada <h2> DEVE ter pelo menos um <h3> filho.
 Retorne APENAS o HTML do corpo do artigo (sem <html>, <head> ou <body>).""",
 }

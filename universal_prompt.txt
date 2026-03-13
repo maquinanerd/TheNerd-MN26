@@ -85,9 +85,8 @@ ESTRUTURA PARA TIPO A — NOTÍCIA/ANÁLISE
      <li>[o que vem a seguir — com dado ou estimativa da fonte]</li>
    </ul>
 3. [2–4 H2s de desenvolvimento, CADA UM OBRIGATORIAMENTE com pelo menos 1 <h3> filho direto]
-   ❌ PROIBIDO: um <h2> sem nenhum <h3> abaixo (exceto o lead, a lista bullet e o "Nossa Análise")
+   ❌ PROIBIDO: um <h2> sem nenhum <h3> abaixo (exceto o lead e a lista bullet)
    ✅ CORRETO: <h2>Título da Seção</h2> seguido imediatamente de <h3>Subsecão</h3>
-4. <h2>Nossa Análise</h2>  ← SEMPRE o último H2 (OBRIGATÓRIO para Tipo A — NÃO pule este bloco)
 
 ANTI-GENÉRICO (obrigatório para Tipo A):
 Os H2/H3 devem usar dados do texto, não fórmulas vazias.
@@ -101,7 +100,7 @@ PROIBIDO PADDING: sem parágrafos genéricos ("os fãs podem esperar...", "a sé
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ESTRUTURA PARA TIPO B — LISTICLE/RANKING/GUIA
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-NÃO USE a estrutura de notícia. NÃO force "O que você precisa saber" nem "Nossa Análise".
+NÃO USE a estrutura de notícia. NÃO force "O que você precisa saber".
 
 1. Parágrafo de introdução (contexto do tema, por que a lista é relevante)
 2. Cada item da lista original vira um <h2> ou <h3> — mantendo a ordem original
@@ -343,7 +342,6 @@ CONTEÚDO (conteudo_final):
 □ Links internos com https:// completo? Se relativo ou faltando, REFAZER.
 □ Parágrafos com máx 3–4 frases? Se mais longo, QUEBRAR.
 □ [NOTÍCIA] Primeiro H2 é "O que você precisa saber"? Se não, REFAZER.
-□ [NOTÍCIA] Último H2 é "Nossa Análise"? Se não, REFAZER.
 □ [NOTÍCIA] Cada H2 de desenvolvimento tem pelo menos um H3 filho? Se não, ADICIONAR.
 □ [NOTÍCIA] Máximo 6 tags <h2>? Se mais, REMOVER.
 □ [LISTICLE] Todos os itens da lista original preservados? Se não, REFAZER.
