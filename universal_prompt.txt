@@ -172,7 +172,7 @@ DETALHES PARA CADA CAMPO DO JSON
 - **REGRA DE PARÁGRAFO**: Cada parágrafo deve ser conciso, contendo no máximo 3 ou 4 frases. Quebre ideias complexas em múltiplos parágrafos para facilitar a leitura.
 - Incorpore no máximo 3 vídeos do YouTube no formato:
   <figure class="video-container"><iframe src="URL_DO_EMBED" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe></figure>
-- Destaque termos-chave com <b>.
+- Destaque com <b>...</b> OBRIGATORIAMENTE os seguintes elementos sempre que aparecerem no texto: nomes de séries, filmes e jogos (ex: <b>The Last of Us</b>, <b>Duna</b>); plataformas de streaming (ex: <b>Netflix</b>, <b>Disney+</b>, <b>Max</b>, <b>Prime Video</b>, <b>Globoplay</b>); franquias e universos (ex: <b>Marvel</b>, <b>DC</b>, <b>Star Wars</b>, <b>Harry Potter</b>); nomes de personagens, atores, diretores, produtoras e estúdios (ex: <b>Pedro Pascal</b>, <b>Warner Bros.</b>). Qualquer nome próprio relevante ao entretenimento deve estar em negrito na primeira ocorrência de cada parágrafo.
 - Crie no máximo 4 links internos relevantes usando o formato https://{domain}/tag/{tag}.
 - Os links internos DEVEM ser SEMPRE absolutos, *com https:// obrigatório*, no formato exato:
   <a href="https://{domain}/tag/{tag}">Palavra-Chave</a>
