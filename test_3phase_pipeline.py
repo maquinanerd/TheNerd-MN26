@@ -47,8 +47,9 @@ from app.ai_seo_pack import seo_pack
 
 def _pick_url() -> tuple[str, str]:
     """Return (url, title) — from argv or from ScreenRant RSS."""
-    if len(sys.argv) > 1:
-        return sys.argv[1], "Artigo via CLI"
+    url_args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    if url_args:
+        return url_args[0], "Artigo via CLI"
 
     logger.info("Buscando artigo recente no ScreenRant RSS...")
     feed_config = RSS_FEEDS.get("screenrant_movie_news") or RSS_FEEDS.get("screenrant_tv")
@@ -129,6 +130,148 @@ def _title_quality(title: str) -> list[str]:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Publicação no WordPress (acionada por --publish)
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _publish_article(result: dict, extracted: dict, source_url: str) -> None:
+    """Publica o artigo gerado no WordPress via REST API."""
+    from urllib.parse import urlparse
+    from app.html_utils import (
+        unescape_html_content,
+        validate_and_fix_figures,
+        remove_broken_image_placeholders,
+        downgrade_h1_to_h2,
+        strip_ai_tag_links,
+        strip_naked_internal_links,
+        merge_images_into_content,
+        strip_credits_and_normalize_youtube,
+        remove_source_domain_schemas,
+        detect_forbidden_cta,
+        html_to_gutenberg_blocks,
+    )
+    from app.seo_title_optimizer import optimize_title
+    from app.config import (
+        WORDPRESS_CONFIG,
+        WORDPRESS_CATEGORIES,
+        CATEGORY_ALIASES,
+    )
+    from app.wordpress import WordPressClient
+
+    print()
+    print("=" * 70)
+    print("  PUBLICANDO NO WORDPRESS")
+    print("=" * 70)
+
+    wp_client = WordPressClient(
+        config=WORDPRESS_CONFIG,
+        categories_map=WORDPRESS_CATEGORIES,
+    )
+
+    title = result.get("titulo_final", "")
+    content_html = result.get("conteudo_final", "")
+
+    # ── HTML cleaners (replicando pipeline.py) ────────────────────────────────
+    content_html = unescape_html_content(content_html)
+    content_html = validate_and_fix_figures(content_html)
+    content_html = remove_broken_image_placeholders(content_html)
+    content_html = downgrade_h1_to_h2(content_html)
+    content_html = strip_ai_tag_links(content_html)
+    content_html = strip_naked_internal_links(content_html)
+    content_html = merge_images_into_content(content_html, extracted.get("images", []))
+
+    # ── Otimização de título ──────────────────────────────────────────────────
+    title, title_report = optimize_title(title, content_html)
+    logger.info(f"Título final: {title}")
+
+    # ── Upload imagem destacada ───────────────────────────────────────────────
+    featured_media_id = None
+    featured_image_url = extracted.get("featured_image_url")
+    if featured_image_url:
+        media = wp_client.upload_media_from_url(featured_image_url, title)
+        if media and media.get("id"):
+            featured_media_id = media["id"]
+            logger.info(f"FEATURED OK: ID {featured_media_id}")
+
+    content_html = strip_credits_and_normalize_youtube(content_html)
+    content_html = remove_source_domain_schemas(content_html)
+
+    # ── Linha de crédito ──────────────────────────────────────────────────────
+    source_name = urlparse(source_url).netloc
+    credit_line = (
+        f'<p><strong>Fonte:</strong> '
+        f'<a href="{source_url}" target="_blank" rel="noopener noreferrer">{source_name}</a>'
+        f'</p>'
+    )
+    content_html += f"\n{credit_line}"
+
+    # ── Categorias ────────────────────────────────────────────────────────────
+    final_category_ids = {WORDPRESS_CATEGORIES.get("Notícias", 1)}
+    if categorias := result.get("categorias", []):
+        suggested_names = [
+            cat["nome"] for cat in categorias if isinstance(cat, dict) and "nome" in cat
+        ]
+        normalized_names = [CATEGORY_ALIASES.get(n.lower(), n) for n in suggested_names]
+        if dynamic_ids := wp_client.resolve_category_names_to_ids(normalized_names):
+            final_category_ids.update(dynamic_ids)
+
+    # ── CTA final check ───────────────────────────────────────────────────────
+    cta_match = detect_forbidden_cta(content_html)
+    if cta_match:
+        logger.error(f"CTA detectado antes de publicar: '{cta_match}' — publicação bloqueada")
+        print(f"\n❌ PUBLICAÇÃO BLOQUEADA — CTA detectado: '{cta_match}'")
+        return
+
+    # ── Gutenberg ─────────────────────────────────────────────────────────────
+    gutenberg_content = html_to_gutenberg_blocks(content_html)
+
+    # ── Yoast meta ────────────────────────────────────────────────────────────
+    yoast_meta = result.get("yoast_meta", {})
+    if related_kws := result.get("related_keyphrases"):
+        yoast_meta["_yoast_wpseo_keyphrases"] = json.dumps(
+            [{"keyword": kw} for kw in related_kws]
+        )
+
+    post_payload = {
+        "title": title,
+        "slug": result.get("slug"),
+        "content": gutenberg_content,
+        "excerpt": result.get("meta_description", ""),
+        "categories": list(final_category_ids),
+        "tags": result.get("tags_sugeridas", []),
+        "featured_media": featured_media_id,
+        "meta": yoast_meta,
+    }
+
+    # ── Publicar ──────────────────────────────────────────────────────────────
+    wp_post_id = wp_client.create_post(post_payload)
+    if not (wp_post_id and wp_post_id > 0):
+        logger.error(f"create_post retornou ID inválido: {wp_post_id}")
+        print(f"\n❌ FALHA NA PUBLICAÇÃO — create_post retornou: {wp_post_id}")
+        return
+
+    # ── Yoast SEO update ──────────────────────────────────────────────────────
+    seo_meta = {
+        "title": result.get("seo_title", title)[:70],
+        "description": result.get("meta_description", "")[:160],
+        "focuskw": result.get("focus_keyword", result.get("focus_keyphrase", ""))[:30],
+        "title_pt": title[:70],
+        "description_pt": result.get("meta_description", "")[:160],
+        "noindex": "0",
+        "nofollow": "0",
+    }
+    wp_client.update_post_yoast_seo(wp_post_id, featured_media_id, seo_meta)
+
+    wp_post_url = f"https://www.maquinanerd.com.br/?p={wp_post_id}"
+    print(f"\n✅ PUBLICADO COM SUCESSO!")
+    print(f"   Post ID:  {wp_post_id}")
+    print(f"   URL:      {wp_post_url}")
+    print(f"   Título:   {title}")
+    print(f"   Cats:     {final_category_ids}")
+    print(f"   Tags:     {result.get('tags_sugeridas', [])}")
+    print("=" * 70)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Main
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -136,6 +279,10 @@ def main():
     if not AI_API_KEYS:
         print("ERRO: Nenhuma chave GEMINI_ encontrada no .env")
         sys.exit(1)
+
+    publish_mode = "--publish" in sys.argv
+    if publish_mode:
+        logger.info("Modo --publish ativado: artigo será publicado no WordPress após geração.")
 
     client = AIClient(
         keys=AI_API_KEYS,
@@ -296,6 +443,10 @@ def main():
     print()
     print(f"✅  Resultado completo salvo em: {out_path}")
     print("=" * 70)
+
+    # ── Publicação (somente com --publish) ────────────────────────────────────
+    if publish_mode:
+        _publish_article(result, extracted, url)
 
 
 if __name__ == "__main__":
