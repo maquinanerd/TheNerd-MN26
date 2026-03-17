@@ -64,6 +64,9 @@ CLEANER_FUNCTIONS = {
     'globo.com': clean_html_for_globo_esporte,
 }
 
+# --- 3-phase AI pipeline toggle ---
+USE_3PHASE_AI = os.getenv('USE_3PHASE_AI', 'false').lower() == 'true'
+
 
 def assess_content_quality(content_html: str) -> dict:
     """
@@ -194,6 +197,62 @@ def is_valid_upload_candidate(url: str) -> bool:
     except Exception:
         return False
 
+
+def _run_3phase_batch(
+    batch_data: List[Dict[str, Any]],
+    processor: "AIProcessor",
+) -> List[tuple]:
+    """
+    Run each article in batch_data through the 3-phase AI pipeline:
+      1. ai_sanitize  — strip CTAs / junk
+      2. ai_rewrite   — editorial rewrite
+      3. ai_seo_pack  — SEO metadata JSON
+
+    Returns a list of (rewritten_data | None, error_msg | None) tuples,
+    one per article, matching the format returned by AIProcessor.rewrite_batch.
+    """
+    from .ai_sanitize import sanitize as _sanitize
+    from .ai_rewrite import rewrite as _rewrite
+    from .ai_seo_pack import seo_pack as _seo_pack
+
+    client = processor._ai_client
+    results = []
+
+    for bdata in batch_data:
+        article_title = bdata.get("title", "N/A")
+        try:
+            html_raw = bdata.get("content_html", "")
+
+            # Phase 1 — Sanitização
+            logger.info(f"[3PHASE] Phase 1 sanitize: {article_title[:60]}")
+            html_clean = _sanitize(html_raw, client)
+
+            # Phase 2 — Reescrita editorial
+            logger.info(f"[3PHASE] Phase 2 rewrite: {article_title[:60]}")
+            html_rewritten = _rewrite(html_clean, {
+                "domain": bdata.get("domain", ""),
+                "link_block": bdata.get("link_block", ""),
+                "videos": bdata.get("videos", []),
+            }, client)
+
+            # Phase 3 — Empacotamento SEO
+            logger.info(f"[3PHASE] Phase 3 seo_pack: {article_title[:60]}")
+            seo_data = _seo_pack(html_rewritten, article_title, {
+                "domain": bdata.get("domain", ""),
+            }, client)
+
+            if seo_data is None:
+                results.append((None, "seo_pack returned None"))
+            else:
+                results.append((seo_data, None))
+
+        except Exception as exc:
+            logger.error(f"[3PHASE] Failed for '{article_title}': {exc}", exc_info=True)
+            results.append((None, str(exc)))
+
+    return results
+
+
 def process_batch(articles: List[Dict[str, Any]], link_map: Dict[str, Any]):
     """Process a batch of articles."""
     if not articles:
@@ -303,8 +362,11 @@ def process_batch(articles: List[Dict[str, Any]], link_map: Dict[str, Any]):
                 })
 
             try:
-                # Process all articles in batch with one API call
-                batch_results = ai_processor.rewrite_batch(batch_data)
+                if USE_3PHASE_AI:
+                    batch_results = _run_3phase_batch(batch_data, ai_processor)
+                else:
+                    # Legacy: single AI call per batch
+                    batch_results = ai_processor.rewrite_batch(batch_data)
                 batch_count += 1
 
                 # Process results in same order
