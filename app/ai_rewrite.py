@@ -17,16 +17,43 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-# Portais concorrentes — apenas log de aviso (Phase 1 deve remover, mas checamos)
+# Portais concorrentes — parágrafos/itens que os mencionem são removidos automaticamente
 _COMPETITORS = ("omelete", "jovem nerd", "ign brasil", "adorocinema", "cineclick")
 
-# Frases genéricas de padding que o prompt proíbe — usadas só para log de debug
+# Frases de padding — sentenças que as contenham são removidas; <p> residual muito curto é eliminado
 _PADDING_PHRASES = (
     "isso pode indicar",
     "isso sugere",
     "isso reforça",
     "os fãs podem esperar",
     "a série tem potencial",
+)
+
+# Marcadores analíticos em PT-BR — presença em um parágrafo longo indica bloco editorial
+_ANALYTICAL_MARKERS = (
+    "vale lembrar",
+    "vale destacar",
+    "na prática",
+    "no universo",
+    "ao longo",
+    "historicamente",
+    "em comparação",
+    "ao contrário",
+    "diferente de",
+    "desde que",
+    "embora",
+    "apesar",
+    "o que isso representa",
+    "o que muda",
+    "a questão é",
+    "é importante",
+    "isso significa",
+    "o impacto",
+    "contexto",
+    "conexão com",
+    "relação entre",
+    "implicações",
+    "consequência",
 )
 
 _PROMPT_TEMPLATE = """\
@@ -145,40 +172,86 @@ CONTEÚDO FONTE:
 {content}"""
 
 
+def _remove_sentences_containing(text: str, needles: tuple) -> str:
+    """Remove individual sentences from a text block that contain any of the needles."""
+    # Split on sentence-ending punctuation followed by space or end-of-string
+    sentences = re.split(r'(?<=[.!?])\s+', text.strip())
+    cleaned = [
+        s for s in sentences
+        if not any(needle in s.lower() for needle in needles)
+    ]
+    return " ".join(cleaned)
+
+
 def _post_process(html: str) -> str:
     """
-    Minimal post-processing of rewritten HTML:
+    Post-processing of rewritten HTML — enforces structural rules programmatically:
     - Downgrade <h1> → <h2>
-    - Remove paragraphs that start with "Fonte:"
-    - Log warnings for competitor mentions or padding phrases
+    - Remove <p>/<li> that start with "Fonte:"
+    - Remove entire <p>/<li> blocks containing competitor names
+    - Remove sentences inside <p> blocks that contain padding phrases;
+      decompose the <p> if what remains is too short (< 20 chars)
     """
     soup = BeautifulSoup(html, "html.parser")
 
-    # Downgrade h1 → h2 (the prompt forbids h1, but we enforce it)
+    # ── 1. Downgrade h1 → h2 ─────────────────────────────────────────────────
     for h1 in soup.find_all("h1"):
         h1.name = "h2"
         logger.debug("[REWRITE] <h1> downgraded to <h2>")
 
-    # Remove any "Fonte:" paragraph the model may have added
+    # ── 2. Remove "Fonte:" paragraphs ─────────────────────────────────────────
+    for tag in soup.find_all(["p", "li"]):
+        if tag.get_text(strip=True).lower().startswith("fonte:"):
+            tag.decompose()
+            logger.debug("[REWRITE] Removed 'Fonte:' element")
+
+    # ── 3. Remove blocks containing competitor names ──────────────────────────
+    for tag in soup.find_all(["p", "li", "figcaption"]):
+        text = tag.get_text(separator=" ", strip=True).lower()
+        for comp in _COMPETITORS:
+            if comp in text:
+                logger.warning(f"[REWRITE] Removed block mentioning competitor '{comp}'")
+                tag.decompose()
+                break
+
+    # ── 4. Strip padding sentences from <p> blocks ────────────────────────────
     for p in soup.find_all("p"):
-        if p.get_text(strip=True).lower().startswith("fonte:"):
+        raw = p.get_text(separator=" ", strip=True)
+        if not any(phrase in raw.lower() for phrase in _PADDING_PHRASES):
+            continue
+        cleaned = _remove_sentences_containing(raw, _PADDING_PHRASES)
+        if len(cleaned) < 20:
+            logger.debug(f"[REWRITE] Removed padding-only <p>: '{raw[:60]}'")
             p.decompose()
-            logger.debug("[REWRITE] Removed 'Fonte:' paragraph")
+        else:
+            # Replace the paragraph's text content while keeping any child tags
+            # (e.g. <strong>, <a>) that are not in the offending sentence.
+            # Simple approach: replace with plain text paragraph.
+            p.clear()
+            p.append(cleaned)
+            logger.debug(f"[REWRITE] Cleaned padding from <p>: '{cleaned[:60]}'")
 
-    result = str(soup)
+    return str(soup)
 
-    # Warn if competitor names leaked through (Phase 1 should have caught these)
-    lowered = result.lower()
-    for comp in _COMPETITORS:
-        if comp in lowered:
-            logger.warning(f"[REWRITE] Competitor '{comp}' detected in output — Phase 1 may have missed it")
 
-    # Debug-log padding phrases (informational only — not blocking)
-    for phrase in _PADDING_PHRASES:
-        if phrase in lowered:
-            logger.debug(f"[REWRITE] Padding phrase detected: '{phrase}'")
+def _check_editorial_block(html: str) -> bool:
+    """
+    Heuristic check: does the HTML contain at least one analytical paragraph?
 
-    return result
+    Criteria (both must be true for a paragraph to qualify):
+    - Word count >= 25 (long enough to be substantive)
+    - Contains at least one analytical marker from _ANALYTICAL_MARKERS
+
+    Returns True if at least one qualifying paragraph is found.
+    """
+    soup = BeautifulSoup(html, "html.parser")
+    for p in soup.find_all("p"):
+        text = p.get_text(separator=" ", strip=True)
+        words = len(text.split())
+        lowered = text.lower()
+        if words >= 25 and any(marker in lowered for marker in _ANALYTICAL_MARKERS):
+            return True
+    return False
 
 
 def rewrite(html_clean: str, meta: Dict[str, Any], client: "AIClient") -> str:
@@ -237,6 +310,13 @@ def rewrite(html_clean: str, meta: Dict[str, Any], client: "AIClient") -> str:
 
         # Post-processing: enforce structural rules regardless of AI compliance
         text = _post_process(text)
+
+        # Editorial block check: warn if no analytical paragraph was found
+        if not _check_editorial_block(text):
+            logger.warning(
+                "[REWRITE][NO-EDITORIAL] Nenhum parágrafo analítico detectado — "
+                "o modelo pode não ter incluído o bloco editorial obrigatório"
+            )
 
         logger.info(f"[REWRITE] OK — {len(html_clean)} → {len(text)} chars")
         return text
