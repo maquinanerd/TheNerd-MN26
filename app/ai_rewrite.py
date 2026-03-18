@@ -348,7 +348,7 @@ def rewrite(html_clean: str, meta: Dict[str, Any], client: "AIClient") -> str:
     )
 
     generation_config = {
-        "temperature": 0.55,
+        "temperature": 0.5,
         "max_output_tokens": 16000,
     }
 
