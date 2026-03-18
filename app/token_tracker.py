@@ -112,10 +112,18 @@ class TokenTracker:
             # Atualizar estatísticas
             self._update_stats(log_entry)
             
-            self.logger.info(
-                f"[{api_type.upper()}] Entrada: {prompt_tokens} | "
-                f"Saída: {completion_tokens} | Total: {total_tokens}"
-            )
+            if total_tokens > 0:
+                self.logger.info(
+                    f"[{api_type.upper()}] Entrada: {prompt_tokens} | "
+                    f"Saída: {completion_tokens} | Total: {total_tokens}"
+                )
+            else:
+                title_str = f'"{article_title[:70]}" ' if article_title else ""
+                id_str = f"| Post ID: {wp_post_id} " if wp_post_id else ""
+                self.logger.info(
+                    f"[{api_type.upper()}] {title_str}{id_str}"
+                    f"— publicado no WordPress (tokens de IA registrados em chamadas anteriores)"
+                )
             
             return True
             
