@@ -20,6 +20,12 @@ logger = logging.getLogger(__name__)
 # Portais concorrentes — parágrafos/itens que os mencionem são removidos automaticamente
 _COMPETITORS = ("omelete", "jovem nerd", "ign brasil", "adorocinema", "cineclick")
 
+# Fontes/portais externos — usados para detectar resíduo de agregador (sem remoção automática)
+_AGGREGATOR_SOURCES = (
+    "omelete", "jovem nerd", "ign brasil", "adorocinema", "cineclick",
+    "screenrant", "collider", "cbr", "deadline",
+)
+
 # Frases de padding — sentenças que as contenham são removidas; <p> residual muito curto é eliminado
 _PADDING_PHRASES = (
     "isso pode indicar",
@@ -27,6 +33,9 @@ _PADDING_PHRASES = (
     "isso reforça",
     "os fãs podem esperar",
     "a série tem potencial",
+    "o filme promete",
+    "isso abre possibilidade",
+    "isso levanta a possibilidade",
 )
 
 # Marcadores analíticos em PT-BR — presença em um parágrafo longo indica bloco editorial
@@ -54,6 +63,26 @@ _ANALYTICAL_MARKERS = (
     "relação entre",
     "implicações",
     "consequência",
+)
+
+# Sinais editoriais específicos de contexto/franquia — usados por has_editorial_block()
+_EDITORIAL_SIGNALS = (
+    "no mcu",
+    "na marvel",
+    "na dc",
+    "nos quadrinhos",
+    "na franquia",
+    "no universo",
+    "em obras anteriores",
+    "nos filmes anteriores",
+    "na cronologia",
+    "isso coloca",
+    "isso muda",
+    "isso abre espaço",
+    "isso conecta",
+    "isso indica um caminho",
+    "dentro da história",
+    "na adaptação",
 )
 
 _PROMPT_TEMPLATE = """\
@@ -234,24 +263,59 @@ def _post_process(html: str) -> str:
     return str(soup)
 
 
-def _check_editorial_block(html: str) -> bool:
+# ── Public check functions (importable by test scripts) ─────────────────────
+
+def has_editorial_block(html: str) -> bool:
     """
-    Heuristic check: does the HTML contain at least one analytical paragraph?
+    Check if the HTML contains at least one analytical/contextual paragraph.
 
-    Criteria (both must be true for a paragraph to qualify):
-    - Word count >= 25 (long enough to be substantive)
-    - Contains at least one analytical marker from _ANALYTICAL_MARKERS
-
-    Returns True if at least one qualifying paragraph is found.
+    A paragraph qualifies if:
+    - word count >= 20
+    - contains at least one signal from _EDITORIAL_SIGNALS OR _ANALYTICAL_MARKERS
     """
     soup = BeautifulSoup(html, "html.parser")
+    all_signals = _EDITORIAL_SIGNALS + _ANALYTICAL_MARKERS
     for p in soup.find_all("p"):
         text = p.get_text(separator=" ", strip=True)
-        words = len(text.split())
-        lowered = text.lower()
-        if words >= 25 and any(marker in lowered for marker in _ANALYTICAL_MARKERS):
+        if len(text.split()) >= 20 and any(s in text.lower() for s in all_signals):
             return True
     return False
+
+
+def count_padding_phrases(html: str) -> int:
+    """Count how many padding/generic phrases appear in the HTML text."""
+    soup = BeautifulSoup(html, "html.parser")
+    text = soup.get_text(separator=" ", strip=True).lower()
+    return sum(1 for phrase in _PADDING_PHRASES if phrase in text)
+
+
+def find_aggregator_residue(html: str) -> list:
+    """
+    Detect aggregator/source residue in the HTML text.
+
+    Checks for:
+    - "fonte:" prefix
+    - "via " attribution
+    - mention of known competitor/source portals (_AGGREGATOR_SOURCES)
+
+    Returns a list of found residue strings (empty = clean).
+    """
+    soup = BeautifulSoup(html, "html.parser")
+    text = soup.get_text(separator=" ", strip=True).lower()
+    found = []
+    if "fonte:" in text:
+        found.append("fonte:")
+    if re.search(r'\bvia\s+\w', text):
+        found.append("via [atribuição]")
+    for source in _AGGREGATOR_SOURCES:
+        if source in text:
+            found.append(source)
+    return found
+
+
+def _check_editorial_block(html: str) -> bool:
+    """Internal alias kept for backward compatibility — delegates to has_editorial_block."""
+    return has_editorial_block(html)
 
 
 def rewrite(html_clean: str, meta: Dict[str, Any], client: "AIClient") -> str:
@@ -311,12 +375,19 @@ def rewrite(html_clean: str, meta: Dict[str, Any], client: "AIClient") -> str:
         # Post-processing: enforce structural rules regardless of AI compliance
         text = _post_process(text)
 
-        # Editorial block check: warn if no analytical paragraph was found
-        if not _check_editorial_block(text):
+        # ── Editorial quality checks ──────────────────────────────────────
+        if not has_editorial_block(text):
             logger.warning(
-                "[REWRITE][NO-EDITORIAL] Nenhum parágrafo analítico detectado — "
-                "o modelo pode não ter incluído o bloco editorial obrigatório"
+                "[REWRITE][NO-EDITORIAL] Nenhum parágrafo com bloco editorial detectado"
             )
+
+        padding_count = count_padding_phrases(text)
+        if padding_count >= 2:
+            logger.warning(f"[REWRITE][PADDING] Excesso de frases genéricas: {padding_count}")
+
+        residues = find_aggregator_residue(text)
+        if residues:
+            logger.warning(f"[REWRITE][AGGREGATOR] Resíduos detectados: {residues}")
 
         logger.info(f"[REWRITE] OK — {len(html_clean)} → {len(text)} chars")
         return text

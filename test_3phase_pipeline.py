@@ -37,7 +37,7 @@ from app.ai_client_gemini import AIClient
 from app.extractor import ContentExtractor
 from app.feeds import FeedReader
 from app.ai_sanitize import sanitize
-from app.ai_rewrite import rewrite
+from app.ai_rewrite import rewrite, has_editorial_block, count_padding_phrases, find_aggregator_residue
 from app.ai_seo_pack import seo_pack
 
 
@@ -336,6 +336,11 @@ def main():
     t_rewrite = time.perf_counter() - t2
     logger.info(f"Reescrita: {_word_count(html_clean)} → {_word_count(html_rewritten)} palavras — {t_rewrite:.1f}s")
 
+    # ── Checks editoriais (sobre html_rewritten) ──────────────────────────────
+    editorial_ok = has_editorial_block(html_rewritten)
+    padding_count = count_padding_phrases(html_rewritten)
+    aggregator_residues = find_aggregator_residue(html_rewritten)
+
     # ── Fase 3: SEO Pack ──────────────────────────────────────────────────────
     logger.info("")
     logger.info("=" * 60)
@@ -385,6 +390,14 @@ def main():
     print(f"   CTA:          {'❌ DETECTADO' if _has_cta(conteudo) else '✅ Limpo'}")
     print(f"   Concorrentes: {'❌ DETECTADOS' if _has_competitor(conteudo) else '✅ Limpo'}")
 
+    # Checklist editorial
+    print()
+    print("── CHECKLIST EDITORIAL ──────────────────────────────────────")
+    print(f"   Bloco editorial original: {'✅ OK' if editorial_ok else '❌ FALHOU'}")
+    print(f"   Frases genéricas detectadas: {padding_count}{'  ⚠️' if padding_count >= 2 else ''}")
+    agg_display = ', '.join(aggregator_residues) if aggregator_residues else 'NENHUM'
+    print(f"   Resíduo de agregador: {'⚠️  ' + agg_display if aggregator_residues else '✅ NENHUM'}")
+
     # SEO
     print()
     print("── CHECKLIST SEO ────────────────────────────────────────────")
@@ -432,6 +445,11 @@ def main():
             "url": url,
             "original_title": original_title,
             "result": result,
+            "editorial_checks": {
+                "editorial_block_present": editorial_ok,
+                "padding_phrase_count": padding_count,
+                "aggregator_residue": aggregator_residues,
+            },
             "timings": {
                 "extract": round(t_extract, 2),
                 "sanitize": round(t_sanitize, 2),
