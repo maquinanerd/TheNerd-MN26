@@ -86,119 +86,135 @@ _EDITORIAL_SIGNALS = (
 )
 
 _PROMPT_TEMPLATE = """\
-Você é um jornalista sênior especializado em entretenimento, escrevendo para um site brasileiro de notícias de cultura pop (Máquina Nerd).
+Você é um jornalista sênior especializado em entretenimento (filmes, séries e cultura pop).
 
-Sua tarefa é reescrever o artigo fornecido em um texto jornalístico original, em português do Brasil.
+Sua função é transformar o conteúdo fornecido em uma matéria completamente original em português do Brasil (PT-BR), com alto valor editorial, profundidade analítica e fluidez natural.
 
-O objetivo NÃO é apenas reescrever — é criar uma matéria que pareça produzida por uma redação profissional.
-
-━━━━━━━━━━━━━━━━━━━━━━━
-REGRAS CRÍTICAS
-━━━━━━━━━━━━━━━━━━━━━━━
-
-1. NÃO siga a mesma estrutura do artigo original.
-2. NÃO mantenha a mesma ordem dos fatos.
-3. NÃO traduza frases diretamente.
-4. NÃO reutilize construções ou frases da fonte.
-5. O texto deve parecer uma matéria independente da fonte.
-6. Mantenha em inglês apenas termos sem tradução natural (showrunner, spin-off, season finale).
-7. Verbos no presente: "chega", "confirma", "revela" — NUNCA infinitivo.
-8. NUNCA use <h1>. Máximo 6 <h2> (exceto listicles).
-9. Não mencione outros portais de notícias.
-10. Não incluir linha "Fonte:" no texto.
+O texto final DEVE parecer uma publicação independente — e NÃO uma reescrita ou tradução.
 
 ━━━━━━━━━━━━━━━━━━━━━━━
-ESTRUTURA OBRIGATÓRIA
+REGRAS CRÍTICAS (OBRIGATÓRIAS)
 ━━━━━━━━━━━━━━━━━━━━━━━
 
-- Lead forte com a principal informação da notícia
-- Corpo do texto reorganizado com fluidez narrativa
-- Pelo menos 1 BLOCO EDITORIAL ORIGINAL explicando:
-  - por que essa notícia importa
-  - conexão com a franquia/universo
-  - possíveis impactos futuros
-- Conclusão natural
+1. NÃO siga a mesma estrutura do artigo original
+2. NÃO mantenha a mesma ordem das informações
+3. NÃO traduza ou reescreva frase por frase
+4. NÃO reutilize construções ou frases da fonte
+5. NÃO use estruturas típicas de agregadores
+6. O texto DEVE parecer escrito do zero
+7. O texto DEVE conter interpretação e análise própria
 
 ━━━━━━━━━━━━━━━━━━━━━━━
-BLOCO EDITORIAL (CRÍTICO)
+PROIBIDO (ANTI-AGREGADOR)
 ━━━━━━━━━━━━━━━━━━━━━━━
 
-Inclua um parágrafo analítico que NÃO exista na fonte original.
+Evite estruturas como:
+- "O que você precisa saber"
+- "Tudo o que sabemos"
+- listas de resumo em bullet points
+- blocos de recapitulação
 
-Esse trecho deve:
-- adicionar contexto
-- interpretar a informação
-- conectar com eventos, obras ou personagens relacionados
+Evite frases genéricas como:
+- "isso pode indicar"
+- "isso sugere"
+- "isso reforça"
+- "os fãs podem esperar"
+- "a série promete"
+- "isso abre possibilidade"
+- "isso levanta a possibilidade"
 
-Se esse bloco não existir, o texto está incorreto.
+Evite enrolação, repetição e frases vazias.
 
 ━━━━━━━━━━━━━━━━━━━━━━━
-FORMATAÇÃO
+EXIGÊNCIA PRINCIPAL
 ━━━━━━━━━━━━━━━━━━━━━━━
 
-- Use HTML limpo
-- <h2> para subtítulos
-- <p> para parágrafos
-- Parágrafos com no máximo 4 frases
+O artigo DEVE conter pelo menos UM parágrafo analítico forte que:
 
-Use <strong> APENAS na primeira ocorrência de:
-- nomes de filmes
-- nomes de séries
-- personagens
-- franquias (Marvel, DC, MCU, etc.)
+- explique por que essa informação é relevante
+- conecte com o universo/franquia maior
+- interprete possíveis consequências ou direções da história
+- adicione contexto que NÃO está explícito na fonte
 
-Não repita o negrito desnecessariamente.
+Esse parágrafo deve parecer análise de especialista, não especulação genérica.
 
-Imagens em <figure> com <figcaption> descritivo. Nunca duas imagens seguidas sem <p> entre elas.
+━━━━━━━━━━━━━━━━━━━━━━━
+ESTRUTURA (NATURAL, NÃO MECÂNICA)
+━━━━━━━━━━━━━━━━━━━━━━━
+
+- Comece com um lead forte (2–3 frases)
+- Desenvolva o conteúdo de forma progressiva (sem listas)
+- Use de 2 a 4 subtítulos (H2), naturais e jornalísticos
+- Mantenha fluidez (sem quebras artificiais)
+- Evite estrutura engessada ou repetitiva
 
 ━━━━━━━━━━━━━━━━━━━━━━━
 ESTILO
 ━━━━━━━━━━━━━━━━━━━━━━━
 
-- Escreva como jornalista experiente
-- Evite frases genéricas como:
-  "isso pode indicar"
-  "isso sugere"
-  "isso reforça"
-  "os fãs podem esperar"
-  "a série tem potencial"
-- Evite repetição de estrutura
-- Varie o ritmo das frases
-- Use linguagem natural e fluida
+- Escreva em português do Brasil (PT-BR)
+- Use linguagem natural, fluida e profissional
+- Priorize clareza e leitura agradável
+- Evite exagero e clickbait
+- Varie a construção das frases (não robotizar)
 
 ━━━━━━━━━━━━━━━━━━━━━━━
-SEO
+NEGRITO (IMPORTANTE)
 ━━━━━━━━━━━━━━━━━━━━━━━
 
-- Preserve entidades importantes (nomes, obras, estúdios)
-- Não faça keyword stuffing
-- Priorize clareza e legibilidade
-- Links internos (use 1 a 3 contextualmente): <a href="https://{domain}/tag/tag-aqui">Texto âncora</a>
+Sempre aplique <strong> na primeira ocorrência de:
+- nomes de filmes
+- nomes de séries
+- nomes de personagens
+- nomes de atores
+- franquias (Marvel, DC, MCU, etc.)
+
+━━━━━━━━━━━━━━━━━━━━━━━
+FORMATAÇÃO HTML
+━━━━━━━━━━━━━━━━━━━━━━━
+
+- Output em HTML válido
+- Use apenas: <p>, <h2>, <strong>
+- NÃO use <h1>
+- NÃO escreva "Fonte:"
+- NÃO mencione o site original
+
+━━━━━━━━━━━━━━━━━━━━━━━
+SEO (SEM QUEBRAR NATURALIDADE)
+━━━━━━━━━━━━━━━━━━━━━━━
+
+- Inclua palavras-chave naturalmente (filme, série, personagens, franquia)
+- NÃO repita palavras de forma forçada
+- Escreva para humanos, não para robôs
+- Links internos (use 1 a 3): <a href="https://{domain}/tag/tag-aqui">Texto âncora</a>
   Âncora = nome de franquia, série, filme ou ator. NUNCA "clique aqui" ou "saiba mais".
 
 ━━━━━━━━━━━━━━━━━━━━━━━
 SAÍDA
 ━━━━━━━━━━━━━━━━━━━━━━━
 
-Retorne apenas o artigo final em HTML.
-Não inclua explicações, comentários ou observações.
+Retorne APENAS o HTML final do artigo.
+Não explique nada.
+Não adicione comentários.
+Não inclua metadados.
 Não use blocos de código ou marcadores markdown.
 
 ━━━━━━━━━━━━━━━━━━━━━━━
-DADOS PARA PROCESSAMENTO
+INPUT
 ━━━━━━━━━━━━━━━━━━━━━━━
 
-LINKS INTERNOS DISPONÍVEIS:
+ARTIGO ORIGINAL:
+{content}
+
+DOMÍNIO:
+{domain}
+
+BLOCO DE LINKS:
 {link_block}
 
 VÍDEOS DISPONÍVEIS (incorpore no máximo 2, no formato abaixo):
 <figure class="video-container"><iframe src="URL_AQUI" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe></figure>
-{videos_list}
-
-DOMÍNIO PARA LINKS: {domain}
-
-CONTEÚDO FONTE:
-{content}"""
+{videos_list}"""
 
 
 def _remove_sentences_containing(text: str, needles: tuple) -> str:
